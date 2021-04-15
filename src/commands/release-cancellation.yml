@@ -33,3 +33,4 @@ steps:
   #     command: |
   #       on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<<pipeline.id>>/workflow" -H "Circle-Token: $CIRCLECI_PIPELINE_LAUNCH_TOKEN"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
   #       curl -X POST "https://circleci.com/api/v2/workflow/$on_release_id/cancel" -H "Circle-Token: $CIRCLECI_PIPELINE_LAUNCH_TOKEN"
+  # 
