@@ -14,12 +14,8 @@ steps:
   - jq/install
   - run:
       environment:
-        PARAM_VERSION: <<parameters.version>>
-        PARAM_ORG: <<parameters.org>>
-        PARAM_REPO: <<parameters.repo>>
         PARAM_USERNAME: "$<<parameters.NEXUS_USERNAME>>"
         PARAM_PASSWORD: "$<<parameters.NEXUS_PASSWORD>>"
-        PARAM_DRYRUN: <<parameters.dry-run>>
       name: Generate missing Docker tags
       command: <<include(scripts/docker-tags.sh)>>
   - run:
