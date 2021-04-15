@@ -12,12 +12,12 @@ parameters:
     description: "Nexus Password"
 steps:
   - jq/install
-  - run:
-      environment:
-        PARAM_USERNAME: "$<<parameters.NEXUS_USERNAME>>"
-        PARAM_PASSWORD: "$<<parameters.NEXUS_PASSWORD>>"
-      name: Generate missing Docker tags
-      command: <<include(scripts/docker-tags.sh)>>
+  # - run:
+  #     environment:
+  #       PARAM_USERNAME: "$<<parameters.NEXUS_USERNAME>>"
+  #       PARAM_PASSWORD: "$<<parameters.NEXUS_PASSWORD>>"
+  #     name: Generate missing Docker tags
+  #     command: <<include(scripts/docker-tags.sh)>>
   - run:
       name: Retrieve staging repository ID and drop staging repository on Nexus
       command: |
