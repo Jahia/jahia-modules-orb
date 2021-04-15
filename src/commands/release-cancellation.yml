@@ -19,10 +19,10 @@ parameters:
   PIPELINE_LAUNCH_TOKEN:
     type: env_var_name
     default: CIRCLECI_PIPELINE_LAUNCH_TOKEN
-    description: "Pipeline Launch Token"    
+    description: "Pipeline Launch Token"
   PIPELINE_ID:
     type: string
-    description: "Pipeline ID"    
+    description: "Pipeline ID"
 steps:
   - jq/install
   - run:
