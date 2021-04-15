@@ -1,0 +1,49 @@
+description: >
+  Analyze the code with SonarQube
+
+parameters:
+  PRIMARY_RELEASE_BRANCH:
+    type: string
+    default: "main"
+    description: "Name of the primary release branch (master, main, ...)"
+  MODULE_ID:
+    type: string
+    description: "ID of the module"
+  GITHUB_SLUG:
+    type: string
+    description: "GitHub SLUG of the module (for example: jahia/sandbox)"
+  NEXUS_USERNAME:
+    type: env_var_name
+    default: NEXUS_USERNAME
+    description: "Nexus Username"
+steps:
+  - run:
+      name: Sonar Release branch analysis
+      environment:
+        DEPENDENCY_CHECK_SETTINGS:
+          -DfailOnError=false -DskipProvidedScope=true -DskipTestScope=false -Dformats=HTML,JSON
+          -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json
+          -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+          -DretireJsAnalyzerEnabled=false -DnodeAnalyzerEnabled=false -DdataDirectory=/home/circleci/.owasp/dependency-check-data
+      command: |
+        if [[ ! -z "$CIRCLE_PULL_REQUEST" ]]; then
+          # echo "Git custom command to fix circle-ci checkout for sonar analysis"
+          git fetch --all
+          git branch -D << parameters.PRIMARY_RELEASE_BRANCH >>
+          git rev-parse origin/<< parameters.PRIMARY_RELEASE_BRANCH >>
+          echo "Executing a PR based analysis"
+          mvn -s .circleci/.circleci.settings.xml sonar:sonar \
+              -Dsonar.projectKey=<< parameters.MODULE_ID >> \
+              -Dsonar.pullrequest.branch=$CIRCLE_BRANCH \
+              -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} \
+              -Dsonar.pullrequest.base=<< parameters.PRIMARY_RELEASE_BRANCH >> \
+              -Dsonar.pullrequest.github.repository=<< parameters.GITHUB_SLUG >>
+        elif [[ "$CIRCLE_BRANCH" == << parameters.PRIMARY_RELEASE_BRANCH >> ]]; then
+          echo "Executing an analysis on the main branch"
+          mvn -s .circleci/.circleci.settings.xml dependency-check:aggregate sonar:sonar \
+              -Dsonar.projectKey=<< parameters.MODULE_ID >> $DEPENDENCY_CHECK_SETTINGS
+        else
+          echo "Executing an analysis on branch: $CIRCLE_BRANCH"
+          mvn -s .circleci/.circleci.settings.xml dependency-check:aggregate sonar:sonar \
+              -Dsonar.branch.name=$CIRCLE_BRANCH $DEPENDENCY_CHECK_SETTINGS
+        fi
