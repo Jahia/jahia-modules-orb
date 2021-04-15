@@ -11,9 +11,8 @@ parameters:
     default: NEXUS_PASSWORD
     description: "Nexus Password"
 steps:
-  # - jq/install
   - run:
-      name: Retrieve staging repository ID and drop staging repository on Nexus
+      name: Retrievestaging repository ID and drop staging repository on Nexus
       command: |
         echo <<parameters.NEXUS_USERNAME>>
         echo ${<<parameters.NEXUS_USERNAME>>}
