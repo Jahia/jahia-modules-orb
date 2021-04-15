@@ -35,5 +35,5 @@ steps:
   - run:
       name: Cancel the on-hold release workflow
       command: |
-        on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<< parameters.id >>/workflow" -H "Circle-Token: << parameters.PIPELINE_LAUNCH_TOKEN >>"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
+        on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<< parameters.PIPELINE_ID >>/workflow" -H "Circle-Token: << parameters.PIPELINE_LAUNCH_TOKEN >>"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
         curl -X POST "https://circleci.com/api/v2/workflow/$on_release_id/cancel" -H "Circle-Token: << parameters.PIPELINE_LAUNCH_TOKEN >>"
