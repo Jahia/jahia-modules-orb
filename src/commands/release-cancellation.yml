@@ -11,16 +11,10 @@ parameters:
     default: NEXUS_PASSWORD
     description: "Nexus Password"
 steps:
-  - jq/install
+  # - jq/install
   - run:
       name: Retrieve staging repository ID and drop staging repository on Nexus
       command: |
         echo <<parameters.NEXUS_USERNAME>>
         echo ${<<parameters.NEXUS_USERNAME>>}
         echo $<<parameters.NEXUS_USERNAME>>
-  # - run:
-  #     name: Cancel the on-hold release workflow
-  #     command: |
-  #       on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<<pipeline.id>>/workflow" -H "Circle-Token: $CIRCLECI_PIPELINE_LAUNCH_TOKEN"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
-  #       curl -X POST "https://circleci.com/api/v2/workflow/$on_release_id/cancel" -H "Circle-Token: $CIRCLECI_PIPELINE_LAUNCH_TOKEN"
-  # 
