@@ -12,22 +12,12 @@ parameters:
     description: "Nexus Password"
 steps:
   - jq/install
-  # - run:
-  #     environment:
-  #       PARAM_USERNAME: "$<<parameters.NEXUS_USERNAME>>"
-  #       PARAM_PASSWORD: "$<<parameters.NEXUS_PASSWORD>>"
-  #     name: Generate missing Docker tags
-  #     command: <<include(scripts/docker-tags.sh)>>
   - run:
       name: Retrieve staging repository ID and drop staging repository on Nexus
       command: |
         echo <<parameters.NEXUS_USERNAME>>
         echo ${<<parameters.NEXUS_USERNAME>>}
         echo $<<parameters.NEXUS_USERNAME>>
-        # curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -H "Accept: application/json" https://devtools.jahia.com/nexus/service/local/staging/profile_repositories > staging-repos.json
-        # stagingRepositoryId=$(cat staging-repos.json | jq '.data[] | select(.description|test("<< pipeline.parameters.MODULE_ID >>:<< pipeline.parameters.RELEASE_VERSION >>")) | .repositoryId')
-        # echo "Staging repository being dropped: ${stagingRepositoryId}"
-        # curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -H "Accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"stagedRepositoryIds\":[${stagingRepositoryId}]}}" https://devtools.jahia.com/nexus/service/local/staging/bulk/drop
   # - run:
   #     name: Cancel the on-hold release workflow
   #     command: |
