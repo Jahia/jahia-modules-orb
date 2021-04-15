@@ -2,6 +2,12 @@ description: >
   Perfoms a release cancellation
 
 parameters:
+  MODULE_ID:
+    type: string
+    description: "ID of the module"
+  RELEASE_VERSION:
+    type: string
+    description: "Version to cancel"    
   NEXUS_USERNAME:
     type: env_var_name
     default: NEXUS_USERNAME
@@ -11,9 +17,16 @@ parameters:
     default: NEXUS_PASSWORD
     description: "Nexus Password"
 steps:
+  - jq/install
   - run:
-      name: Retrievestaging repository ID and drop staging repository on Nexus
+      name: Retrieve staging repository ID and drop staging repository on Nexus
       command: |
-        echo <<parameters.NEXUS_USERNAME>>
-        echo ${<<parameters.NEXUS_USERNAME>>}
-        echo $<<parameters.NEXUS_USERNAME>>
+        curl -u ${<< parameters.NEXUS_USERNAME >>}:${<< parameters.NEXUS_PASSWORD >>} -H "Accept: application/json" https://devtools.jahia.com/nexus/service/local/staging/profile_repositories > staging-repos.json
+        stagingRepositoryId=$(cat staging-repos.json | jq '.data[] | select(.description|test("<< parameters.MODULE_ID >>:<< parameters.RELEASE_VERSION >>")) | .repositoryId')
+        echo "Staging repository being dropped: ${stagingRepositoryId}"
+        curl -u ${<< parameters.NEXUS_USERNAME>>}:${<< parameters.NEXUS_PASSWORD >>} -H "Accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"stagedRepositoryIds\":[${stagingRepositoryId}]}}" https://devtools.jahia.com/nexus/service/local/staging/bulk/drop
+  - run:
+      name: Cancel the on-hold release workflow
+      command: |
+        on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<< pipeline.id >>/workflow" -H "Circle-Token: $CIRCLECI_PIPELINE_LAUNCH_TOKEN"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
+        curl -X POST "https://circleci.com/api/v2/workflow/$on_release_id/cancel" -H "Circle-Token: $CIRCLECI_PIPELINE_LAUNCH_TOKEN"
