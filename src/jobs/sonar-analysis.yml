@@ -19,7 +19,7 @@ parameters:
   working_directory:
     type: string
     default: "~/spource"
-    description: "Working directory for the job"  
+    description: "Working directory for the job"
 
 working_directory: << parameters.working_directory >>
 
@@ -27,7 +27,7 @@ resource_class: << parameters.resource_class >>
 
 docker:
   - image: cimg/openjdk:8.0.275-node
-    
+
 steps:
   - attach_workspace:
       at: .
@@ -42,7 +42,7 @@ steps:
   - restore_cache:
       keys:
         - v2-sonar-owasp-dependencies-{{ checksum "is_pr" }}
-        - v2-sonar-owasp-dependencies-      
+        - v2-sonar-owasp-dependencies-
   - jahia-modules-orb/sonar-analysis:
       github_slug: << parameters.github_slug >>
       module_id: << parameters.module_id >>
@@ -51,4 +51,4 @@ steps:
       paths:
         - ~/.owasp/dependency-check-data
         - ~/.sonar/cache
-      key: v2-sonar-owasp-dependencies-{{ checksum "is_pr" }}      
+      key: v2-sonar-owasp-dependencies-{{ checksum "is_pr" }}

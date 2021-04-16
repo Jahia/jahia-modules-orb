@@ -5,7 +5,7 @@ parameters:
   working_directory:
     type: string
     default: "~/spource"
-    description: "Working directory for the job"  
+    description: "Working directory for the job"
 
   steps:
     - run:
