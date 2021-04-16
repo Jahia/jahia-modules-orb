@@ -1,5 +1,5 @@
 description: >
-  Cancel a release
+  Perform a SonarQube analysis
 
 parameters:
   primary_release_branch:
@@ -18,7 +18,7 @@ parameters:
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
   working_directory:
     type: string
-    default: "~/spource"
+    default: "~/source"
     description: "Working directory for the job"
 
 working_directory: << parameters.working_directory >>
