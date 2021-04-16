@@ -8,7 +8,7 @@ usage:
   workflows:
     use-my-orb:
       jobs:
-        - jahia-modules-orb/sonar-analysis:        
+        - jahia-modules-orb/sonar-analysis:
             primary_release_branch: main
             module_id: samdbox
             github_slug: jahia/sandbox
