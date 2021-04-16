@@ -4,10 +4,11 @@ description: >
 usage:
   version: 2.1
   orbs:
-    <orb-name>: <namespace>/<orb-name>@1.2.3
+    jahia-modules-orb: jahia/jahia-modules-orb@1.2.3
   workflows:
     use-my-orb:
-      - jahia-modules-orb/sonar-analysis:        
-          primary_release_branch: main
-          module_id: samdbox
-          github_slug: jahia/sandbox
+      jobs:
+        - jahia-modules-orb/sonar-analysis:        
+            primary_release_branch: main
+            module_id: samdbox
+            github_slug: jahia/sandbox
