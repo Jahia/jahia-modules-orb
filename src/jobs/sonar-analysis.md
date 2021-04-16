@@ -1,9 +1,6 @@
 description: >
   Cancel a release
 
-orbs:
-  some-orb: jahia/jahia-modules-orb@volatile
-
 parameters:
   primary_release_branch:
     type: string
