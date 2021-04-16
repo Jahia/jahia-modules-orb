@@ -1,0 +1,19 @@
+description: >
+  Generate Cache Key Seeds
+
+parameters:
+  working_directory:
+    type: string
+    default: "~/spource"
+    description: "Working directory for the job"
+
+steps:
+  - run:
+      name: Generate Cache Key Seeds
+      command: |
+        find . -name 'pom.xml' | sort | xargs cat > << parameters.working_directory >>/maven_cache_seed
+        if [[ ! -z "$CIRCLE_PULL_REQUEST" ]]; then
+          echo "true" > << parameters.working_directory >>/is_pr
+        else
+          echo "false" > << parameters.working_directory >>/is_pr
+        fi
