@@ -43,7 +43,7 @@ steps:
       keys:
         - v2-sonar-owasp-dependencies-{{ checksum "is_pr" }}
         - v2-sonar-owasp-dependencies-
-  - jahia-modules-orb/sonar-analysis:
+  - sonar-analysis:
       github_slug: << parameters.github_slug >>
       module_id: << parameters.module_id >>
       primary_release_branch: << parameters.primary_release_branch >>
