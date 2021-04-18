@@ -1,0 +1,52 @@
+description: >
+  Publish the docker container containing the tests
+
+parameters:
+  primary_release_branch:
+    type: string
+    default: "main"
+    description: "Name of the primary release branch (master, main, ...)"
+  resource_class:
+    type: string
+    default: "large"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"   
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Path to the integration tests"
+  tests_image_name:
+    type: string
+    description: "Image name to push to the container registry"    
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/node:14.15
+
+steps:
+  - attach_workspace:
+      at: .
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - run:
+      name: Push << parameters.tests_image_name >> image to docker hub
+      command: |
+        cd << parameters.tests_path >>
+        docker load -i tests_image.tar
+        if [ "$CIRCLE_BRANCH" = "<< parameters.primary_release_branch >>" ]; then
+            IMAGE_TAG=latest
+        else
+            IMAGE_TAG=${CIRCLE_TAG/''}
+        fi
+        echo "Image tag is: $IMAGE_TAG"
+        docker tag << parameters.tests_image_name >>:latest << parameters.tests_image_name >>:$IMAGE_TAG
+        docker login -u $DOCKERHUB_LOGIN -p $DOCKERHUB_PASSWORD
+        echo "Tagged the image"
+        docker push << parameters.tests_image_name >>:$IMAGE_TAG
+        echo "Pushed tag"

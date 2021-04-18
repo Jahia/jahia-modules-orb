@@ -1,0 +1,38 @@
+# Run security checks
+# Security checks on the project are used to validate that we don't use any problematic javascript libraries
+# It is using audit-ci by IBM (https://github.com/IBM/audit-ci)
+description: >
+  Run static security checks
+  These commands assume that packages-lock.json or yarn-lock.json are present
+
+parameters:
+  module_path:
+    type: string
+    default: "./"
+    description: "Path to the module"        
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Path to the integration tests"
+  auditci_level:
+    type: string
+    default: "moderate"
+    description: "Security level to check against, will fail the step if higher"
+steps:
+  - run:
+      name: Install Audit-ci
+      command: sudo npm install -g audit-ci
+  - run:
+      name: Audit-ci module (javascript only)
+      command: |
+        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>packages.json" ]]; then
+          cd << parameters.module_path >>
+          audit-ci --<< pipeline.parameters.AUDITCI_LEVEL >>
+        fi
+  - run:
+      name: Lint tests (javascript only)
+      command: |
+        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>packages.json" ]]; then
+          cd << parameters.tests_path >>
+          audit-ci --<< pipeline.parameters.AUDITCI_LEVEL >>
+        fi

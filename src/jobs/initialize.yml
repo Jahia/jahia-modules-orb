@@ -1,0 +1,58 @@
+description: >
+  Initialize the jobs (checkout, generate seed, restore yarn cache)
+
+parameters:
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  resource_class:
+    type: string
+    default: "small"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  module_path:
+    type: string
+    default: "./"
+    description: "Path to the module"
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Path to the integration tests"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/openjdk:8.0.275-node
+
+steps:
+  - checkout
+  - generate-cachekey-seed:
+      working_directory: << parameters.working_directory >>
+  - restore_cache:
+      keys:
+        - v1-npm-{{ checksum "yarn.lock" }}-{{ checksum "<< parameters.tests_path >>yarn.lock" }}
+  - run:
+      name: Run yarn if packages.json exists in module folder
+      command: |
+        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>packages.json" ]]; then
+          cd << parameters.module_path >>
+          yarn
+        fi
+  - run:
+      name: Run yarn if packages.json exists in test folder
+      command: |
+        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>packages.json" ]]; then
+          cd << parameters.module_path >>
+          yarn
+        fi
+  - save_cache:
+      key: v1-npm-{{ checksum "<< parameters.tests_path >>yarn.lock" }}
+      paths:
+        - << pipeline.parameters.module_path >>node_modules
+        - << pipeline.parameters.tests_path >>node_modules
+  - persist_to_workspace:
+      root: << parameters.working_directory >>
+      paths:
+        - .

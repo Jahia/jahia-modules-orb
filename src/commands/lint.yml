@@ -1,0 +1,35 @@
+# Lint the project or any other static code analysis
+# This action should run in parrallel, failed linting should trigger an error but should not stop execution of the tests
+# Ideally this should lint both the module codebase and the test codebase, we want to fail on warning (it is up the the
+# team to either fix the warning, ignore the warning, or modify the ruleset so that this warnning doesn't happen again)
+description: >
+  Lint the codebases
+
+parameters:
+  module_path:
+    type: string
+    default: "./"
+    description: "Path to the module"        
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Path to the integration tests"
+  max_warning:
+    type: string
+    default: "1"
+    description: "Maximum number of warning before failing the linting step"    
+steps:
+  - run:
+      name: Lint module (javascript only)
+      command: |
+        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>packages.json" ]]; then
+          cd << parameters.module_path >>
+          yarn run lint --max-warnings << parameters.max_warning >>
+        fi
+  - run:
+      name: Lint tests (javascript only)
+      command: |
+        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>packages.json" ]]; then
+          cd << parameters.tests_path >>
+          yarn run lint --max-warnings << parameters.max_warning >>
+        fi
