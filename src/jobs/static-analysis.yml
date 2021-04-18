@@ -1,0 +1,52 @@
+description: >
+  Perform static code analysis (currently for Javascript codebases)
+  Linting, security analysis (audit-ci)
+
+parameters:
+  primary_release_branch:
+    type: string
+    default: "main"
+    description: "Name of the primary release branch (master, main, ...)"
+  resource_class:
+    type: string
+    default: "large"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  module_path:
+    type: string
+    default: "./"
+    description: "Path to the module"
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Path to the integration tests"
+  max_warning:
+    type: string
+    default: "1"
+    description: "Maximum number of warning before failing the linting step"
+  auditci_level:
+    type: string
+    default: "moderate"
+    description: "Security level to check against, will fail the step if higher"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/node:14.15
+
+steps:
+  - attach_workspace:
+      at: .
+  - lint:
+      module_path: << parameters.module_path >>
+      tests_path: << parameters.tests_path >>
+      max_warning: << parameters.max_warning >>
+  - security:
+      module_path: << parameters.module_path >>
+      tests_path: << parameters.tests_path >>
+      auditci_level: << parameters.auditci_level >>

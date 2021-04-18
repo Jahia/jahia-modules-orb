@@ -1,0 +1,54 @@
+# Build the module and save it locally
+# We're saving the artifacts that are then used later on to execute the tests
+# The artifacts are also stored and made available through circleci UI if further investigations are necessary
+description: >
+  Build a Java codebase with maven
+
+parameters:
+  resource_class:
+    type: string
+    default: "large"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/openjdk:8.0.275
+
+steps:
+  - attach_workspace:
+      at: .
+  - restore_cache:
+      keys:
+        - v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
+  - run:
+      name: Build package and load all dependencies into local Maven repository
+      command: mvn -s .circleci/.circleci.settings.xml clean package de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+  # Environment provisioning is sometimes dependent upon dependencies build during mvn clean package/install
+  # This step copies those dependencies and make them available for further actions,
+  # such as being used to provision a running Jahia with a set of freshly built artifacts
+  - run:
+      name: Copy dependencies to provision artifacts
+      command: mvn -s .circleci/.circleci.settings.xml dependency:copy-dependencies
+  - save_cache:
+      paths:
+        - ~/.m2
+      key: v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
+  - run:
+      name: Prepare artifacts
+      command: |
+        mkdir /tmp/artifacts/
+        cp /home/circleci/source/target/*.jar /tmp/artifacts/
+        cp /home/circleci/source/target/*source-release.zip /tmp/artifacts/
+  - store_artifacts:
+      path: /tmp/artifacts/
+  - persist_to_workspace:
+      root: << parameters.working_directory >>
+      paths:
+        - .

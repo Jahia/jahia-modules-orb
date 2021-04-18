@@ -1,0 +1,31 @@
+# This job publish the artifact to nexus by calling the deploy command
+# It is only executed when merging into master (after successful PR execution)
+description: >
+  Publishing the artifact to nexus, only when merging into the main branch
+
+parameters:
+  resource_class:
+    type: string
+    default: "large"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/openjdk:8.0.275
+
+steps:
+  - attach_workspace:
+      at: .
+  - restore_cache:
+      keys:
+        - v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
+  - run:
+      name: Deploy artifacts to server repository
+      command: mvn -s .circleci/.circleci.settings.xml clean deploy
