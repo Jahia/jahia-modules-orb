@@ -9,7 +9,7 @@ parameters:
   module_path:
     type: string
     default: "./"
-    description: "Path to the module"        
+    description: "Path to the module"
   tests_path:
     type: string
     default: "tests/"
@@ -27,12 +27,12 @@ steps:
       command: |
         if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>packages.json" ]]; then
           cd << parameters.module_path >>
-          audit-ci --<< pipeline.parameters.AUDITCI_LEVEL >>
+          audit-ci --<< parameters.auditci_level >>
         fi
   - run:
       name: Lint tests (javascript only)
       command: |
         if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>packages.json" ]]; then
           cd << parameters.tests_path >>
-          audit-ci --<< pipeline.parameters.AUDITCI_LEVEL >>
+          audit-ci --<< parameters.auditci_level >>
         fi

@@ -13,14 +13,14 @@ parameters:
   working_directory:
     type: string
     default: "~/source"
-    description: "Working directory for the job"   
+    description: "Working directory for the job"
   tests_path:
     type: string
     default: "tests/"
     description: "Path to the integration tests"
   tests_image_name:
     type: string
-    description: "Image name to push to the container registry"    
+    description: "Image name to push to the container registry"
 
 working_directory: << parameters.working_directory >>
 
