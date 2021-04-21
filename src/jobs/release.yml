@@ -51,7 +51,7 @@ steps:
       command: |
         git fetch --all
         git pull origin $CIRCLE_BRANCH --quiet
-   - run:
+  - run:
        name: Delete github tag << parameters.release_version >>
        command: |
          mkdir -p ~/.ssh
@@ -101,9 +101,9 @@ steps:
       command: |
         mvn -s .circleci/.circleci.settings.xml release:perform -Prelease-to-staging-repository -DscmCommentPrefix="[skip ci] [maven-release-plugin]"
   - run:
-    name: Copy artifacts
-    command: |
-      mkdir /tmp/artifacts/
-      cp /home/circleci/source/target/*.jar /tmp/artifacts/
+      name: Copy artifacts
+      command: |
+        mkdir /tmp/artifacts/
+        cp /home/circleci/source/target/*.jar /tmp/artifacts/
   - store_artifacts:
-    path: /tmp/artifacts/
+      path: /tmp/artifacts/
