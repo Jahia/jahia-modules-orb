@@ -89,7 +89,7 @@ steps:
         GH_TOKEN=${GITHUB_API_TOKEN} yarn auto changelog
         curl -X PATCH \
         -H "Accept:application/vnd.github.v3+json" \
-        -d "{\"tag_name\":\"<<pipeline.parameters.RELEASE_VERSION>>\", \"prerelease\": false, \"draft\": false}" -u \
+        -d "{\"tag_name\":\"<< parameters.release_version >>\", \"prerelease\": false, \"draft\": false}" -u \
         jahia-ci:$GITHUB_API_TOKEN https://api.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>
         curl \
         -H "Content-Type: $(file -b --mime-type CHANGELOG.md)" \
