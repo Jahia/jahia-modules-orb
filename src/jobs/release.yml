@@ -12,6 +12,9 @@ parameters:
   github_slug:
     type: string
     description: "GitHub SLUG of the module (for example: jahia/sandbox)"
+  ssh_key_fingerprints:
+    type: string
+    description: "Module fingerprints"
   resource_class:
     type: string
     default: "large"
@@ -26,6 +29,18 @@ parameters:
   release_version:
     type: string
     description: "Version to release"
+  git_user_name:
+    type: string
+    default: "Jahia CI"
+    description: "Git user name"
+  git_user_email:
+    type: string
+    default: "jahia-ci@jahia.com"
+    description: "Git user email"
+  github_api_token:
+    type: env_var_name
+    default: GITHUB_API_TOKEN
+    description: "GitHub API token"
 
 working_directory: << parameters.working_directory >>
 
@@ -45,7 +60,7 @@ steps:
         - v1-maven-dependencies-
   - add_ssh_keys:
       fingerprints:
-        - "29:01:4c:71:59:29:c4:65:45:1d:95:1b:59:31:fd:b4"
+        - << parameters.ssh_key_fingerprints >>
   - run:
       name: Getting latest changes from the remote branch
       command: |
@@ -56,8 +71,8 @@ steps:
        command: |
          mkdir -p ~/.ssh
          ssh-keyscan github.com >> ~/.ssh/known_hosts
-         git config user.email "jahia-ci@jahia.com"
-         git config user.name "Jahia CI"
+         git config user.email << parameters.git_user_email >>
+         git config user.name << parameters.git_user_name >>
          git tag --delete << parameters.release_version >>
          git push --delete origin << parameters.release_version >>
   - run:
@@ -86,14 +101,14 @@ steps:
       command: |
         yarn
         yarn add auto
-        GH_TOKEN=${GITHUB_API_TOKEN} yarn auto changelog
+        GH_TOKEN=<< parameters.github_api_token >> yarn auto changelog
         curl -X PATCH \
         -H "Accept:application/vnd.github.v3+json" \
         -d "{\"tag_name\":\"<< parameters.release_version >>\", \"prerelease\": false, \"draft\": false}" -u \
-        jahia-ci:$GITHUB_API_TOKEN https://api.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>
+        jahia-ci:<< parameters.github_api_token >> https://api.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>
         curl \
         -H "Content-Type: $(file -b --mime-type CHANGELOG.md)" \
-        -u jahia-ci:$GITHUB_API_TOKEN  \
+        -u jahia-ci:<< parameters.github_api_token >>  \
         --data-binary @CHANGELOG.md \
         "https://uploads.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>/assets?name=$(basename CHANGELOG.md)"
   - run:
