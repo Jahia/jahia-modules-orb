@@ -76,20 +76,20 @@ steps:
          git tag --delete << parameters.release_version >>
          git push --delete origin << parameters.release_version >>
   - run:
-    name: Release prepare version for << parameters.release_version >>
-    command: |
-      FINAL_RELEASE_VERSION=$(echo << parameters.release_version >> | cut -d'-' -f 1)
-      MAJOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f1`
-      MINOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f2`
-      REVISION=`echo $FINAL_RELEASE_VERSION | cut -d. -f3`
-      if [[ "<< parameters.primary_release_branch >>" == "master"  || "<< parameters.primary_release_branch >>" == "main"  ||  "<< parameters.primary_release_branch >>" =~ ^[0-9]_x$ ]]; then
-        NEXT_MINOR_VERSION=`expr $MINOR_VERSION + 1`
-        NEXT_DEVELOPMENT_VERSION="$MAJOR_VERSION.$NEXT_MINOR_VERSION.0"-SNAPSHOT
-      else
-        NEXT_REVISION=`expr $REVISION + 1`
-        NEXT_DEVELOPMENT_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$NEXT_REVISION"-SNAPSHOT
-      fi
-      mvn -s .circleci/.circleci.settings.xml -B -Dtag=$FINAL_RELEASE_VERSION release:prepare -DreleaseVersion=$FINAL_RELEASE_VERSION -DdevelopmentVersion="$NEXT_DEVELOPMENT_VERSION"
+      name: Release prepare version for << parameters.release_version >>
+      command: |
+        FINAL_RELEASE_VERSION=$(echo << parameters.release_version >> | cut -d'-' -f 1)
+        MAJOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f1`
+        MINOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f2`
+        REVISION=`echo $FINAL_RELEASE_VERSION | cut -d. -f3`
+        if [[ "<< parameters.primary_release_branch >>" == "master"  || "<< parameters.primary_release_branch >>" == "main"  ||  "<< parameters.primary_release_branch >>" =~ ^[0-9]_x$ ]]; then
+          NEXT_MINOR_VERSION=`expr $MINOR_VERSION + 1`
+          NEXT_DEVELOPMENT_VERSION="$MAJOR_VERSION.$NEXT_MINOR_VERSION.0"-SNAPSHOT
+        else
+          NEXT_REVISION=`expr $REVISION + 1`
+          NEXT_DEVELOPMENT_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$NEXT_REVISION"-SNAPSHOT
+        fi
+        mvn -s .circleci/.circleci.settings.xml -B -Dtag=$FINAL_RELEASE_VERSION release:prepare -DreleaseVersion=$FINAL_RELEASE_VERSION -DdevelopmentVersion="$NEXT_DEVELOPMENT_VERSION"
   - save_cache:
       # need to match rollback cache key on restore
       key: v1-rollback-<< parameters.release_id >>
