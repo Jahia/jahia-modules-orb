@@ -1,0 +1,35 @@
+description: >
+  Send a slack notification
+
+parameters:
+  job_event:
+    type: string
+    default: "pass"
+    description: "ID of the module"
+  jahia_version:
+    type: string
+    description: "Jahia version"
+  docker_repo:
+    type: string
+    description: "Docker repository"
+
+steps:
+  - when:
+      condition: 
+        equal: ["pass", << parameters.job_event >>]
+      steps:
+        - slack/notify:
+            event: pass
+            custom: |
+              {
+                "blocks": [
+                  {
+                    "type": "section", 
+                    "text": 
+                      {
+                        "type": "mrkdwn", 
+                        "text": "New build available for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <https://app.circleci.com/jobs/github/Jahia/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM/artifacts|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*) ```docker pull jahia/<< parameters.docker_repo >>:<< parameters.jahia_version >>-$CIRCLE_BRANCH ```"
+                      }
+                  }
+                ]
+              }
