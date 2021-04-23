@@ -1,9 +1,6 @@
 description: >
   Send a slack notification
 
-orbs:
-  slack: circleci/slack@4.4.0
-
 parameters:
   job_event:
     type: string
