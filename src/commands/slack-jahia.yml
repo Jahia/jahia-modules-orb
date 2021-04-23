@@ -28,7 +28,27 @@ steps:
                     "text":
                       {
                         "type": "mrkdwn",
-                        "text": "New build available for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <https://app.circleci.com/jobs/github/Jahia/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM/artifacts|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*) ```docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >> ```"
+                        "text": ":heavy_check_mark: New build available for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <https://app.circleci.com/jobs/github/Jahia/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM/artifacts|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*) ```docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >> ```"
+                      }
+                  }
+                ]
+              }
+
+  - when:
+      condition:
+        equal: ["fail", << parameters.job_event >>]
+      steps:
+        - slack/notify:
+            event: fail
+            custom: |
+              {
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text":
+                      {
+                        "type": "mrkdwn",
+                        "text": ":x: Build failure for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <$CIRCLE_BUILD_URL|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*)"
                       }
                   }
                 ]
