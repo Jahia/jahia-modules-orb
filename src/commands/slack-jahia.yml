@@ -12,6 +12,9 @@ parameters:
   docker_repo:
     type: string
     description: "Docker repository"
+  docker_image_tag:
+    type: string
+    description: "Docker tag"
 
 steps:
   - when:
@@ -28,7 +31,7 @@ steps:
                     "text":
                       {
                         "type": "mrkdwn",
-                        "text": "New build available for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <https://app.circleci.com/jobs/github/Jahia/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM/artifacts|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*) ```docker pull jahia/<< parameters.docker_repo >>:<< parameters.jahia_version >>-$CIRCLE_BRANCH ```"
+                        "text": "New build available for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <https://app.circleci.com/jobs/github/Jahia/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM/artifacts|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*) ```docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >> ```"
                       }
                   }
                 ]
