@@ -5,7 +5,7 @@ parameters:
   job_event:
     type: string
     default: "pass"
-    description: "ID of the module"
+    description: "CircleCI job event"
   jahia_version:
     type: string
     description: "Jahia version"
@@ -15,7 +15,7 @@ parameters:
 
 steps:
   - when:
-      condition: 
+      condition:
         equal: ["pass", << parameters.job_event >>]
       steps:
         - slack/notify:
@@ -24,10 +24,10 @@ steps:
               {
                 "blocks": [
                   {
-                    "type": "section", 
-                    "text": 
+                    "type": "section",
+                    "text":
                       {
-                        "type": "mrkdwn", 
+                        "type": "mrkdwn",
                         "text": "New build available for *$CIRCLE_PROJECT_REPONAME* (Job artifacts: <https://app.circleci.com/jobs/github/Jahia/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM/artifacts|*$CIRCLE_JOB*>, Branch: *$CIRCLE_BRANCH*) ```docker pull jahia/<< parameters.docker_repo >>:<< parameters.jahia_version >>-$CIRCLE_BRANCH ```"
                       }
                   }
