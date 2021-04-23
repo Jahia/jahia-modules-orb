@@ -1,14 +1,11 @@
 description: >
-  Send a slack notification
+  Send a slack notification to the channel associated with the Slack App
 
 parameters:
   job_event:
     type: string
     default: "pass"
     description: "CircleCI job event"
-  jahia_version:
-    type: string
-    description: "Jahia version"
   docker_repo:
     type: string
     description: "Docker repository"
