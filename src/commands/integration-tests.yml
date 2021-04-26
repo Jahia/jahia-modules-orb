@@ -228,7 +228,7 @@ steps:
       name: Send Test data to https://zencrepes.jahia.com
       when: always
       command: |
-        if [ << parameters.SHOULD_SKIP_ZENCREPES >> == true ]; then
+        if [ << parameters.should_skip_zencrepes >> == true ]; then
           cd << parameters.tests_folder >>
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
