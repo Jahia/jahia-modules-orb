@@ -123,7 +123,7 @@ steps:
       command: |
         if [ ! -d << parameters.tests_folder >>artifacts ]; then
           mkdir -p << parameters.tests_folder >>artifacts
-        fi    
+        fi
   - run:
       name: Docker login
       command: |
