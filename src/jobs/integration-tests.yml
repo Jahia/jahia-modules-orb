@@ -1,0 +1,83 @@
+description: >
+  Runs the integration testing suite
+
+parameters:
+  # Parameters for the job itself
+  resource_class:
+    type: string
+    default: "large"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+
+  # Parameters for the command
+  tests_manifest:
+    type: string
+    default: "provisioning-manifest-snapshot.yaml"
+    description: "Provisioning manifest to execute"
+  jahia_image:
+    type: string
+    default: "jahia/jahia-ee-dev:8-SNAPSHOT"
+    description: "Docker image of jahia (org/repo:tag)"
+  tests_image:
+    type: string
+    default: "modules-tests"
+    description: "Full path to the Tests image (org/repo:tag)"
+  jcustomer_image:
+    type: string
+    default: ""
+    description: "Full path to the JCustomer image (org/repo:tag)"
+  elasticsearch_image:
+    type: string
+    default: ""
+    description: "docker.elastic.co/elasticsearch/elasticsearch:7.10.2"
+  module_id:
+    type: string
+    description: "ID of the module being tested"
+  should_skip_testrail:
+    type: boolean
+    default: true
+    description: "Should the submission to Testrail be skipped ?"
+  should_skip_notifications:
+    type: boolean
+    default: true
+    description: "Should slack notifications be skipped ?"
+  should_skip_zencrepes:
+    type: boolean
+    default: false
+    description: "Should zencrepes notifications be skipped ?"
+  testrail_project:
+    type: string
+    default: "Default"
+    description: "Testrail Project to send data to"
+  testrail_milestone:
+    type: string
+    default: "Default"
+    description: "Milestone to be used when submitting the results to Testrail"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/openjdk:8.0.275-node
+
+steps:
+  - attach_workspace:
+      at: .
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - integration-tests:
+      tests_manifest: << parameters.tests_manifest >>
+      jahia_image: << parameters.jahia_image >>
+      tests_image: << parameters.tests_image >>
+      jcustomer_image: << parameters.jcustomer_image >>
+      elasticsearch_image: << parameters.elasticsearch_image >>
+      module_id: << parameters.module_id >>
+      should_skip_testrail: << parameters.should_skip_testrail >>
+      should_skip_notifications: << parameters.should_skip_notifications >>
+      should_skip_zencrepes: << parameters.should_skip_zencrepes >>
+      testrail_project: << parameters.testrail_project >>
+      testrail_milestone: << parameters.testrail_milestone >>
