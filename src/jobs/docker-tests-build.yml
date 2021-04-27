@@ -1,0 +1,42 @@
+description: >
+  Build the docker container containing the tests
+
+parameters:
+  resource_class:
+    type: string
+    default: "large"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Path to the integration tests"
+  tests_image_name:
+    type: string
+    description: "Image name to push to the container registry"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/node:14.15
+
+steps:
+  - attach_workspace:
+      at: .
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - run:
+      name: Build Docker test image
+      command: |
+        cd << parameters.tests_path >>
+        docker build -t << parameters.tests_image_name >>:latest .
+        docker save -o tests_image.tar << parameters.tests_image_name >>:latest
+  - persist_to_workspace:
+      root: << parameters.working_directory >>
+      paths:
+        - .
