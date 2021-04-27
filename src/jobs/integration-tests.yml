@@ -24,7 +24,7 @@ parameters:
   tests_image:
     type: string
     default: "modules-tests"
-    description: "Full path to the Tests image (org/repo:tag)" 
+    description: "Full path to the Tests image (org/repo:tag)"
   jcustomer_image:
     type: string
     default: ""
