@@ -2,6 +2,7 @@ description: >
   Runs the integration tests suite.
   This run does not handle installation of the module
 
+
 parameters:
   docker_username:
     type: env_var_name
@@ -26,10 +27,6 @@ parameters:
     type: string
     default: ""
     description: "Full path to a Jahia image (org/repo:tag)"
-  jahia_container_name:
-    type: string
-    default: "jahia"
-    description: "Name of the Jahia container in docker-compose file"
   tests_image:
     type: string
     default: ""
@@ -37,7 +34,11 @@ parameters:
   tests_container_name:
     type: string
     default: "cypress"
-    description: "Name of the tests container in docker-compose file"
+    description: "Name of the tests container in the docker-compose file"
+  tests_container_branch:
+    type: string
+    default: ""
+    description: "Branch containing the tests (if different from current)"
   jahia_license:
     type: env_var_name
     default: JAHIA_LICENSE_801_FULL
@@ -46,22 +47,10 @@ parameters:
     type: string
     default: ""
     description: "Full path to a JCustomer image (org/repo:tag)"
-  mariadb_image:
-    type: string
-    default: "library/mariadb:10-focal"
-    description: "Full path to a MariaDB image (org/repo:tag)"
   elasticsearch_image:
     type: string
     default: "docker.elastic.co/elasticsearch/elasticsearch:7.10.2"
     description: "Full path to an Elasticsearch image (org/repo:tag)"
-  other_containers_start:
-    type: string
-    default: ""
-    description: "List of containers to be started"
-  other_containers_delay:
-    type: string
-    default: "0"
-    description: "Delay before start those containers"
   module_id:
     type: string
     description: "ID of the module"
@@ -109,6 +98,8 @@ parameters:
 steps:
   - setup_remote_docker:
       docker_layer_caching: true
+  # Set the environment variables necessary for the docker-compose run
+  # These are declared here to avoid having to repeat in multiple steps
   - run:
       name: Set environment variables from parameters
       command: |
@@ -119,59 +110,68 @@ steps:
         echo "export JCUSTOMER_IMAGE=<< parameters.jcustomer_image >>" >> $BASH_ENV
         echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
   - run:
-      name: Preparing exportfolder
+      name: Preparing export folder
       command: |
         if [ ! -d << parameters.tests_folder >>artifacts ]; then
           mkdir -p << parameters.tests_folder >>artifacts
         fi
+  # Login to the docker registry is needed to access some images (snapshots, ...)
   - run:
       name: Docker login
       command: |
         echo "${<< parameters.docker_username >>}"
         echo "${<< parameters.docker_password >>}" | docker login -u "${<< parameters.docker_username >>}" --password-stdin
+
+  # We always build the test container from scratch
+  # Docker layer caching makes this quick if it was already previously built
+  # To test a previous release, a specific branch can be provided
   - run:
-      name: Spin-up the base Jahia container
+      name: Build the tests image
       command: |
         cd << parameters.tests_folder >>
-        docker-compose -f << parameters.docker_compose_file >> up -d << parameters.jahia_container_name >>
-  - run:
-      name: Spin-up the additional containers (if provided using other_containers_start)
-      command: |
-        if [[ << parameters.other_containers_start >>" != "" ]]; then
-          cd << parameters.tests_folder >>
-          sleep << parameters.other_containers_delay >>
-          docker-compose -f << parameters.docker_compose_file >> up -d << parameters.other_containers_start >>
+        if [[ "<< parameters.tests_container_branch >>" != "" ]]; then
+          git checkout << parameters.tests_container_branch >>
         fi
-  - run:
-      name: Spin-up the test container
-      command: |
-        cd << parameters.tests_folder >>
-        export DOCKER_CLIENT_TIMEOUT=120
-        export COMPOSE_HTTP_TIMEOUT=120
-        docker-compose -f << parameters.docker_compose_file >> up << parameters.tests_container_name >>
-        docker cp << parameters.tests_container_name >>:/home/jahians/results ./artifacts
-  - run:
-      name: Export logs
-      when: always
-      command: |
-        cd << parameters.tests_folder >>
-        docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log
-        docker logs << parameters.jahia_container_name >> > ./artifacts/results/<< parameters.jahia_container_name >>.log
-        docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
+        docker build -t << parameters.tests_image >> .
+        docker save -o tests_image.tar << parameters.tests_image >>
 
   # This fetches data about the running Jahia (jahia versions, module version, ...)
   # This is useful as an artifact but also used by the slack and zencrepes reporters to
   # Populate the data they're sending
+  # https://circleci.com/docs/2.0/configuration-reference/#background-commands
   - run:
-      name: Fetch module dependencies
-      when: always
+      name: Fetch module dependencies (Background step)
+      background: true
       command: |
         cd << parameters.tests_folder >>
         sudo npm install -g jahia-reporter
+        sleep 30
         ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 5
         jahia-reporter utils:modules \
           --moduleId="<< parameters.module_id >>" \
           --filepath="artifacts/results/installed-jahia-modules.json"
+
+  # Using abort-on-container-exit will exit on first container failure, which
+  # for us will be the test container
+  - run:
+      name: Spin-up the containers
+      command: |
+        cd << parameters.tests_folder >>
+        export DOCKER_CLIENT_TIMEOUT=120
+        export COMPOSE_HTTP_TIMEOUT=120
+        docker-compose -f << parameters.docker_compose_file >> up --abort-on-container-exit
+        docker cp << parameters.tests_container_name >>:/home/jahians/results ./artifacts
+
+  # Running logs with -t adds a timestamp, this might feel redundant with the timestamp provided
+  # by directly jahia but this allows for easy comparison between various containers that might
+  # have their timezone set differently
+  - run:
+      name: Export containers logs
+      when: always
+      command: |
+        cd << parameters.tests_folder >>
+        docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
+
   # This is not needed since cypress is going to terminat on failure with exit code 1
   - run:
       name: Analyze Test results
