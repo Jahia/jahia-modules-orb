@@ -22,7 +22,7 @@ parameters:
     description: "Folder containing the docker-compose.yml"
   tests_manifest:
     type: string
-    description: "Manifest contraining the provisioning script"  
+    description: "Manifest contraining the provisioning script"
   jahia_image:
     type: string
     default: ""
@@ -38,7 +38,7 @@ parameters:
   tests_container_branch:
     type: string
     default: ""
-    description: "Branch containing the tests (if different from current)"    
+    description: "Branch containing the tests (if different from current)"
   jahia_license:
     type: env_var_name
     default: JAHIA_LICENSE_801_FULL
@@ -131,7 +131,7 @@ steps:
         cd << parameters.tests_folder >>
         if [[ "<< parameters.tests_container_branch >>" != "" ]]; then
           git checkout << parameters.tests_container_branch >>
-        fi        
+        fi
         docker build -t << parameters.tests_image >> .
         docker save -o tests_image.tar << parameters.tests_image >>
 
