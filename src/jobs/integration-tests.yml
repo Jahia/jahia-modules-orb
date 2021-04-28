@@ -2,7 +2,6 @@ description: >
   Runs the integration testing suite
 
 parameters:
-  # Parameters for the job itself
   resource_class:
     type: string
     default: "large"
@@ -11,31 +10,56 @@ parameters:
     type: string
     default: "~/source"
     description: "Working directory for the job"
-
-  # Parameters for the command
+  docker_username:
+    type: env_var_name
+    default: DOCKERHUB_LOGIN
+    description: "Docker registry Username"
+  docker_password:
+    type: env_var_name
+    default: DOCKERHUB_PASSWORD
+    description: "Docker registry Password"
+  docker_compose_file:
+    type: string
+    default: "docker-compose.yml"
+    description: "Filename for docker-compose yaml file"
+  tests_path:
+    type: string
+    default: "tests/"
+    description: "Folder containing the docker-compose.yml"
   tests_manifest:
     type: string
-    default: "provisioning-manifest-snapshot.yaml"
-    description: "Provisioning manifest to execute"
+    description: "Manifest contraining the provisioning script"
   jahia_image:
     type: string
-    default: "jahia/jahia-ee-dev:8-SNAPSHOT"
-    description: "Docker image of jahia (org/repo:tag)"
+    default: ""
+    description: "Full path to a Jahia image (org/repo:tag)"
   tests_image:
     type: string
     default: "modules-tests"
     description: "Full path to the Tests image (org/repo:tag)"
+  tests_container_name:
+    type: string
+    default: "cypress"
+    description: "Name of the tests container in the docker-compose file"
+  tests_container_branch:
+    type: string
+    default: ""
+    description: "Branch containing the tests (if different from current)"
+  jahia_license:
+    type: env_var_name
+    default: JAHIA_LICENSE_801_FULL
+    description: "Base64 encoded License"
   jcustomer_image:
     type: string
     default: ""
-    description: "Full path to the JCustomer image (org/repo:tag)"
+    description: "Full path to a JCustomer image (org/repo:tag)"
   elasticsearch_image:
     type: string
-    default: ""
-    description: "docker.elastic.co/elasticsearch/elasticsearch:7.10.2"
+    default: "docker.elastic.co/elasticsearch/elasticsearch:7.10.2"
+    description: "Full path to an Elasticsearch image (org/repo:tag)"
   module_id:
     type: string
-    description: "ID of the module being tested"
+    description: "ID of the module"
   should_skip_testrail:
     type: boolean
     default: true
@@ -44,10 +68,22 @@ parameters:
     type: boolean
     default: true
     description: "Should slack notifications be skipped ?"
+  slack_webhook_notifications:
+    type: env_var_name
+    default: SLACK_WEBHOOK_QA_NOTIFICATIONS
+    description: "Webhook to be used for failyre notifications"
+  slack_webhook_notifications_all:
+    type: env_var_name
+    default: SLACK_WEBHOOK_QA_NOTIFICATIONS_ALL
+    description: "Webhook to be used for all notifications (failure and success)"
   should_skip_zencrepes:
     type: boolean
     default: false
     description: "Should zencrepes notifications be skipped ?"
+  zencrepes_secret:
+    type: env_var_name
+    default: ZENCREPES_WEBHOOK_SECRET
+    description: "ZenCrepes Webhook secret"
   testrail_project:
     type: string
     default: "Default"
@@ -56,6 +92,14 @@ parameters:
     type: string
     default: "Default"
     description: "Milestone to be used when submitting the results to Testrail"
+  testrail_username:
+    type: env_var_name
+    default: TESTRAIL_USERNAME
+    description: "Testrail Username"
+  testrail_password:
+    type: env_var_name
+    default: TESTRAIL_PASSWORD
+    description: "Testtrail Password"
 
 working_directory: << parameters.working_directory >>
 
@@ -69,15 +113,156 @@ steps:
       at: .
   - setup_remote_docker:
       docker_layer_caching: true
-  - integration-tests:
-      tests_manifest: << parameters.tests_manifest >>
-      jahia_image: << parameters.jahia_image >>
-      tests_image: << parameters.tests_image >>
-      jcustomer_image: << parameters.jcustomer_image >>
-      elasticsearch_image: << parameters.elasticsearch_image >>
-      module_id: << parameters.module_id >>
-      should_skip_testrail: << parameters.should_skip_testrail >>
-      should_skip_notifications: << parameters.should_skip_notifications >>
-      should_skip_zencrepes: << parameters.should_skip_zencrepes >>
-      testrail_project: << parameters.testrail_project >>
-      testrail_milestone: << parameters.testrail_milestone >>
+  # Set the environment variables necessary for the docker-compose run
+  # These are declared here to avoid having to repeat in multiple steps
+  - run:
+      name: Set environment variables from parameters
+      command: |
+        echo "export MANIFEST=<< parameters.tests_manifest >>" >> $BASH_ENV
+        echo "export JAHIA_IMAGE=<< parameters.jahia_image >>" >> $BASH_ENV
+        echo "export JAHIA_LICENSE=<< parameters.jahia_license >>" >> $BASH_ENV
+        echo "export TESTS_IMAGE=<< parameters.tests_image >>" >> $BASH_ENV
+        echo "export JCUSTOMER_IMAGE=<< parameters.jcustomer_image >>" >> $BASH_ENV
+        echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
+  - run:
+      name: Displaying important environment variables
+      command: |
+        echo "MANIFEST=${MANIFEST}"
+        echo "JAHIA_IMAGE=${JAHIA_IMAGE}"
+        echo "TESTS_IMAGE=${TESTS_IMAGE}"
+        echo "JCUSTOMER_IMAGE=${JCUSTOMER_IMAGE}"
+        echo "ELASTICSEARCH_IMAGE=${ELASTICSEARCH_IMAGE}"        
+  - run:
+      name: Preparing export folder
+      command: |
+        if [ ! -d << parameters.tests_path >>artifacts ]; then
+          mkdir -p << parameters.tests_path >>artifacts
+        fi
+  # Login to the docker registry is needed to access some images (snapshots, ...)
+  - run:
+      name: Docker login
+      command: |
+        echo "${<< parameters.docker_username >>}"
+        echo "${<< parameters.docker_password >>}" | docker login -u "${<< parameters.docker_username >>}" --password-stdin
+
+  # We always build the test container from scratch
+  # Docker layer caching makes this quick if it was already previously built
+  # To test a previous release, a specific branch can be provided
+  - run:
+      name: Build the tests image
+      command: |
+        cd << parameters.tests_path >>
+        if [[ "<< parameters.tests_container_branch >>" != "" ]]; then
+          git checkout << parameters.tests_container_branch >>
+        fi
+        docker build -t << parameters.tests_image >> .
+        docker save -o tests_image.tar << parameters.tests_image >>
+
+  # This fetches data about the running Jahia (jahia versions, module version, ...)
+  # This is useful as an artifact but also used by the slack and zencrepes reporters to
+  # Populate the data they're sending
+  # https://circleci.com/docs/2.0/configuration-reference/#background-commands
+  - run:
+      name: Fetch module dependencies (Background step)
+      background: true
+      command: |
+        cd << parameters.tests_path >>
+        sudo npm install -g jahia-reporter
+        sleep 30
+        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 5
+        jahia-reporter utils:alive
+        jahia-reporter utils:modules \
+          --moduleId="<< parameters.module_id >>" \
+          --filepath="artifacts/results/installed-jahia-modules.json"
+
+  # Using abort-on-container-exit will exit on first container failure, which
+  # for us will be the test container
+  - run:
+      name: Spin-up the containers
+      command: |
+        cd << parameters.tests_path >>
+        export DOCKER_CLIENT_TIMEOUT=120
+        export COMPOSE_HTTP_TIMEOUT=120
+        . ./set-env.sh
+        docker pull ${JAHIA_IMAGE}
+        docker-compose -f << parameters.docker_compose_file >> up --abort-on-container-exit
+        docker cp << parameters.tests_container_name >>:/home/jahians/results ./artifacts
+
+  # Running logs with -t adds a timestamp, this might feel redundant with the timestamp provided
+  # by directly jahia but this allows for easy comparison between various containers that might
+  # have their timezone set differently
+  - run:
+      name: Export containers logs
+      when: always
+      command: |
+        cd << parameters.tests_path >>
+        docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
+
+  # This is not needed since cypress is going to terminat on failure with exit code 1
+  - run:
+      name: Analyze Test results
+      when: always
+      # This looks at the report and fail the job if one of the test has failed
+      command: |
+        cd << parameters.tests_path >>
+        if [[ ! -e ./artifacts/results/test_success ]]; then
+          echo "More than one failure found, sending exit signal"
+          exit 1
+        fi
+  - store_test_results:
+      path: << parameters.tests_path >>artifacts/results/xml_reports
+  - run:
+      name: remove xml results folder
+      when: always
+      command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
+  - store_artifacts:
+      path: << parameters.tests_path >>artifacts/results
+  # Once all is executed, results are submitted to external platforms
+  # Testrail report and Slack (failure only) notifications are sent during scheduled executions or merged into the main branch
+  - run:
+      name: Publish results to testrail
+      when: always
+      command: |
+        if [ << parameters.should_skip_testrail >> == false ]; then
+          cd << parameters.tests_path >>
+          jahia-reporter testrail \
+            --testrailUsername=${<< parameters.testrail_username >>} \
+            --testrailPassword=${<< parameters.testrail_password >>} \
+            --sourcePath="artifacts/results/reports" \
+            --sourceType="json" \
+            --projectName="<< parameters.testrail_project >>" \
+            --milestone="<< parameters.testrail_milestone >>" \
+            --defaultRunDescription="This test was executed on circleci, $CIRCLE_BUILD_URL"
+        fi
+  - run:
+      name: Send Notifications to Slack
+      when: always
+      command: |
+        if [ << parameters.should_skip_notifications >> == false ]; then
+          cd << parameters.tests_path >>
+          jahia-reporter slack \
+            --webhook=${<< parameters.slack_webhook_notifications >>} \
+            --webhookAll=${<< parameters.slack_webhook_notifications_all >>} \
+            --skipSuccessful \
+            --sourcePath="artifacts/results/reports" \
+            --sourceType="json" \
+            --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
+            --msgAuthor="CircleCI ($CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME)" \
+            --runUrl=$CIRCLE_BUILD_URL
+        fi
+  - run:
+      name: Send Test data to https://zencrepes.jahia.com
+      when: always
+      command: |
+        if [ << parameters.should_skip_zencrepes >> == false ]; then
+          cd << parameters.tests_path >>
+          jahia-reporter zencrepes \
+            --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
+            --webhookSecret=${<< parameters.zencrepes_secret >>} \
+            --sourcePath="artifacts/results/reports" \
+            --sourceType="json" \
+            --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
+            --name="<< parameters.module_id >>" \
+            --runUrl=$CIRCLE_BUILD_URL
+        fi
+
