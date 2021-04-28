@@ -108,6 +108,14 @@ steps:
         echo "export JCUSTOMER_IMAGE=<< parameters.jcustomer_image >>" >> $BASH_ENV
         echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
   - run:
+      name: Displaying important environment variables
+      command: |
+        echo "MANIFEST=${MANIFEST}"
+        echo "JAHIA_IMAGE=${JAHIA_IMAGE}"
+        echo "TESTS_IMAGE=${TESTS_IMAGE}"
+        echo "JCUSTOMER_IMAGE=${JCUSTOMER_IMAGE}"
+        echo "ELASTICSEARCH_IMAGE=${ELASTICSEARCH_IMAGE}"        
+  - run:
       name: Preparing export folder
       command: |
         if [ ! -d << parameters.tests_path >>artifacts ]; then
