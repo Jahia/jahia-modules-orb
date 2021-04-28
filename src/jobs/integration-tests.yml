@@ -10,6 +10,10 @@ parameters:
     type: string
     default: "~/source"
     description: "Working directory for the job"
+  primary_release_branch:
+    type: string
+    default: "main"
+    description: "Primary release branch"
   docker_username:
     type: env_var_name
     default: DOCKERHUB_LOGIN
@@ -184,7 +188,7 @@ steps:
         cd << parameters.tests_path >>
         sudo npm install -g jahia-reporter
         sleep 120
-        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 5
+        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 15
         jahia-reporter utils:modules \
           --jahiaPassword=<< parameters.jahia_superuser_password >> \
           --moduleId="<< parameters.module_id >>" \
@@ -246,7 +250,7 @@ steps:
       name: Publish results to testrail
       when: always
       command: |
-        if [ << parameters.should_skip_testrail >> == false ]; then
+        if [ << parameters.should_skip_testrail >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           jahia-reporter testrail \
             --testrailUsername=${<< parameters.testrail_username >>} \
@@ -261,7 +265,7 @@ steps:
       name: Send Notifications to Slack
       when: always
       command: |
-        if [ << parameters.should_skip_notifications >> == false ]; then
+        if [ << parameters.should_skip_notifications >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           jahia-reporter slack \
             --webhook=${<< parameters.slack_webhook_notifications >>} \
@@ -277,7 +281,7 @@ steps:
       name: Send Test data to https://zencrepes.jahia.com
       when: always
       command: |
-        if [ << parameters.should_skip_zencrepes >> == false ]; then
+        if [ << parameters.should_skip_zencrepes >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
@@ -288,4 +292,3 @@ steps:
             --name="<< parameters.module_id >>" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
-
