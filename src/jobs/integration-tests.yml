@@ -131,7 +131,7 @@ steps:
         echo "JAHIA_IMAGE=${JAHIA_IMAGE}"
         echo "TESTS_IMAGE=${TESTS_IMAGE}"
         echo "JCUSTOMER_IMAGE=${JCUSTOMER_IMAGE}"
-        echo "ELASTICSEARCH_IMAGE=${ELASTICSEARCH_IMAGE}"        
+        echo "ELASTICSEARCH_IMAGE=${ELASTICSEARCH_IMAGE}"
   - run:
       name: Preparing export folder
       command: |
