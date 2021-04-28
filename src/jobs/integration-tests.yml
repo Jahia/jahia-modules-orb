@@ -67,7 +67,7 @@ parameters:
   should_skip_artifacts:
     type: boolean
     default: false
-    description: "Should build artifacts be copied in the test container"    
+    description: "Should build artifacts be copied in the test container"
   should_skip_testrail:
     type: boolean
     default: true
@@ -220,7 +220,7 @@ steps:
         cd << parameters.tests_path >>
         docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
         docker logs jahia > ./artifacts/results/jahia.log
-        docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log        
+        docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log
 
   # This is not needed since cypress is going to terminat on failure with exit code 1
   - run:
