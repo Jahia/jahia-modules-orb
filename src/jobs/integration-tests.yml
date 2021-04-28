@@ -64,6 +64,10 @@ parameters:
   module_id:
     type: string
     description: "ID of the module"
+  should_skip_artifacts:
+    type: boolean
+    default: false
+    description: "Should build artifacts be copied in the test container"    
   should_skip_testrail:
     type: boolean
     default: true
@@ -148,6 +152,13 @@ steps:
       command: |
         echo "${<< parameters.docker_username >>}"
         echo "${<< parameters.docker_password >>}" | docker login -u "${<< parameters.docker_username >>}" --password-stdin
+
+  - run:
+      name: Preparing build artifacts
+      command: |
+        if [ << parameters.should_skip_artifacts >> == false ]; then
+          sudo cp -r /home/circleci/source/target/*.jar << parameters.tests_path >>artifacts/
+        fi
 
   # We always build the test container from scratch
   # Docker layer caching makes this quick if it was already previously built
