@@ -33,6 +33,10 @@ parameters:
     type: string
     default: ""
     description: "Full path to a Jahia image (org/repo:tag)"
+  jahia_superuser_password:
+    type: string
+    default: "root1234"
+    description: "Jahia root password"    
   tests_image:
     type: string
     default: "modules-tests"
@@ -170,8 +174,9 @@ steps:
         sudo npm install -g jahia-reporter
         sleep 30
         ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 5
-        jahia-reporter utils:alive
+        jahia-reporter utils:alive --jahiaPassword=<< parameters.jahia_superuser_password >>
         jahia-reporter utils:modules \
+          --jahiaPassword=<< parameters.jahia_superuser_password >> \
           --moduleId="<< parameters.module_id >>" \
           --filepath="artifacts/results/installed-jahia-modules.json"
 
