@@ -186,6 +186,12 @@ steps:
         . ./set-env.sh
         docker pull ${JAHIA_IMAGE}
         docker-compose -f << parameters.docker_compose_file >> up --abort-on-container-exit
+
+  - run:
+      name: Export containers artifacts (reports, secreenshots, videos)
+      when: always
+      command: |
+        cd << parameters.tests_path >>
         docker cp << parameters.tests_container_name >>:/home/jahians/results ./artifacts
 
   # Running logs with -t adds a timestamp, this might feel redundant with the timestamp provided
