@@ -36,7 +36,7 @@ parameters:
   jahia_superuser_password:
     type: string
     default: "root1234"
-    description: "Jahia root password"    
+    description: "Jahia root password"
   tests_image:
     type: string
     default: "modules-tests"
