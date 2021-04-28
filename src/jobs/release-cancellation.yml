@@ -18,7 +18,7 @@ parameters:
     description: "Version of the release"
   pipeline_id:
     type: string
-    description: "Pipeline ID"    
+    description: "Pipeline ID"
   nexus_username:
     type: env_var_name
     default: NEXUS_USERNAME
