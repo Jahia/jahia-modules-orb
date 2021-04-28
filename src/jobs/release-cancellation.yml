@@ -16,6 +16,9 @@ parameters:
   release_version:
     type: string
     description: "Version of the release"
+  pipeline_id:
+    type: string
+    description: "Pipeline ID"    
   nexus_username:
     type: env_var_name
     default: NEXUS_USERNAME
@@ -48,5 +51,5 @@ steps:
   - run:
       name: Cancel the on-hold release workflow
       command: |
-        on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<<pipeline.id>>/workflow" -H "Circle-Token: ${<< parameters.circleci_pipeline_launch_token >>}"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
+        on_release_id=$(curl -G "https://circleci.com/api/v2/pipeline/<< parameters.pipeline_id >>/workflow" -H "Circle-Token: ${<< parameters.circleci_pipeline_launch_token >>}"|jq -rs '.[].items[]|select(.name == "on-release")|.id')
         curl -X POST "https://circleci.com/api/v2/workflow/$on_release_id/cancel" -H "Circle-Token: ${<< parameters.circleci_pipeline_launch_token >>}"
