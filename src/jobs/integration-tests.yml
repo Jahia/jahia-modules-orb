@@ -184,8 +184,11 @@ steps:
         cd << parameters.tests_path >>
         sudo npm install -g jahia-reporter
         sleep 30
+        echo "Waiting for jahia to become available"
         ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 5
         jahia-reporter utils:alive --jahiaPassword=<< parameters.jahia_superuser_password >>
+        echo "Fetching the list of installed modules"
+        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 5
         jahia-reporter utils:modules \
           --jahiaPassword=<< parameters.jahia_superuser_password >> \
           --moduleId="<< parameters.module_id >>" \
