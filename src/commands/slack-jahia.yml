@@ -33,7 +33,7 @@ steps:
       steps:
         - run:
             name: Set the Docker command variable
-            command: echo 'export DOCKER_COMMAND="```docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >>```"' >> $BASH_ENV
+            command: echo 'export DOCKER_COMMAND="\`\`\`docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >>\`\`\`"' >> $BASH_ENV
   - when:
       condition:
         equal: ["pass", << parameters.job_event >>]
