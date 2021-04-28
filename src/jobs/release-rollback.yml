@@ -1,0 +1,66 @@
+description: >
+  Rollback a Jahia module release
+
+parameters:
+  resource_class:
+    type: string
+    default: "small"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  git_user_email:
+    type: string
+    default: "jahia-ci@jahia.com"
+    description: "Git user email"
+  git_user_name:
+    type: string
+    default: "Jahia CI"
+    description: "Git user name"
+  ssh_key_fingerprints:
+    type: string
+    description: "Module fingerprints"
+  release_id:
+    type: string
+    description: "ID of the release"
+  release_version:
+    type: string
+    description: "Version of the release"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/openjdk:8.0.275-node
+
+steps:
+  - checkout
+  - restore_cache:
+      keys:
+        - v1-rollback-<< parameters.release_id >>
+  - add_ssh_keys:
+      fingerprints:
+        - << parameters.ssh_key_fingerprints >>
+  - run:
+      name: Setup github
+      command: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        git config user.email << parameters.git_user_email >>
+        git config user.name << parameters.git_user_name >>
+  - run:
+      name: Rollback release << parameters.release_version >>
+      command: |
+        if [ -f pom.xml.releaseBackup ] && [ -f release.properties ]; then
+          mvn -s .circleci/.circleci.settings.xml release:rollback
+        else
+          echo "Error: rollback artifacts don't exist"
+          exit 1
+        fi
+  - run:
+      name: Delete github tag << parameters.release_version >>
+      command: |
+        git tag --delete << parameters.release_version >>
+        git push --delete origin << parameters.release_version >>  

@@ -1,0 +1,65 @@
+description: >
+  Generate changelog
+
+parameters:
+  resource_class:
+    type: string
+    default: "small"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  ssh_key_fingerprints:
+    type: string
+    description: "Module fingerprints"
+  git_user_email:
+    type: string
+    default: "jahia-ci@jahia.com"
+    description: "Git user email"
+  git_user_name:
+    type: string
+    default: "Jahia CI"
+    description: "Git user name"
+  github_api_token:
+    type: env_var_name
+    default: GITHUB_API_TOKEN
+    description: "GitHub API token"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/node:14.15
+
+steps:
+  - checkout
+  - attach_workspace:
+      at: .
+  - add_ssh_keys:
+      fingerprints:
+        - << parameters.ssh_key_fingerprints >>
+  - run:
+      name: Setting up github configuration
+      command: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        git config user.email << parameters.git_user_email >>
+        git config user.name << parameters.git_user_name >>
+  - run:
+      name: Getting latest changes from the remote branch
+      command: |
+        git fetch --all
+        git pull origin $CIRCLE_BRANCH --quiet
+  - run:
+      name: Update Changelog
+      command: |
+        yarn
+        yarn add auto
+        GH_TOKEN=${parameters.github_api_token} yarn auto changelog
+        git push --set-upstream origin $CIRCLE_BRANCH
+  - persist_to_workspace:
+      root: << parameters.working_directory >>
+      paths:
+        - .
