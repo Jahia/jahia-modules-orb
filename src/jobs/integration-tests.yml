@@ -177,23 +177,6 @@ steps:
         docker build -t << parameters.tests_image >> .
         docker save -o tests_image.tar << parameters.tests_image >>
 
-  # This fetches data about the running Jahia (jahia versions, module version, ...)
-  # This is useful as an artifact but also used by the slack and zencrepes reporters to
-  # Populate the data they're sending
-  # https://circleci.com/docs/2.0/configuration-reference/#background-commands
-  - run:
-      name: Fetch module dependencies (Background step)
-      background: true
-      command: |
-        cd << parameters.tests_path >>
-        sudo npm install -g jahia-reporter
-        sleep 120
-        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 60
-        jahia-reporter utils:modules \
-          --jahiaPassword=<< parameters.jahia_superuser_password >> \
-          --moduleId="<< parameters.module_id >>" \
-          --filepath="artifacts/installed-jahia-modules.json"
-
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
   - run:
@@ -244,8 +227,6 @@ steps:
       command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
   - store_artifacts:
       path: << parameters.tests_path >>artifacts/results
-  - store_artifacts:
-      path: << parameters.tests_path >>artifacts/installed-jahia-modules.json
   # Once all is executed, results are submitted to external platforms
   # Testrail report and Slack (failure only) notifications are sent during scheduled executions or merged into the main branch
   - run:
@@ -275,7 +256,7 @@ steps:
             --skipSuccessful \
             --sourcePath="artifacts/results/reports" \
             --sourceType="json" \
-            --moduleFilepath="artifacts/installed-jahia-modules.json" \
+            --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --msgAuthor="CircleCI ($CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME)" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
@@ -290,7 +271,7 @@ steps:
             --webhookSecret=${<< parameters.zencrepes_secret >>} \
             --sourcePath="artifacts/results/reports" \
             --sourceType="json" \
-            --moduleFilepath="artifacts/installed-jahia-modules.json" \
+            --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --name="<< parameters.module_id >>" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
