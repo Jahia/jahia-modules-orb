@@ -188,11 +188,11 @@ steps:
         cd << parameters.tests_path >>
         sudo npm install -g jahia-reporter
         sleep 120
-        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 15
+        ssh -4 -f -L 8080:localhost:8080 remote-docker sleep 60
         jahia-reporter utils:modules \
           --jahiaPassword=<< parameters.jahia_superuser_password >> \
           --moduleId="<< parameters.module_id >>" \
-          --filepath="artifacts/results/installed-jahia-modules.json"
+          --filepath="artifacts/installed-jahia-modules.json"
 
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
@@ -244,6 +244,8 @@ steps:
       command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
   - store_artifacts:
       path: << parameters.tests_path >>artifacts/results
+  - store_artifacts:
+      path: << parameters.tests_path >>artifacts/installed-jahia-modules.json
   # Once all is executed, results are submitted to external platforms
   # Testrail report and Slack (failure only) notifications are sent during scheduled executions or merged into the main branch
   - run:
@@ -273,7 +275,7 @@ steps:
             --skipSuccessful \
             --sourcePath="artifacts/results/reports" \
             --sourceType="json" \
-            --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
+            --moduleFilepath="artifacts/installed-jahia-modules.json" \
             --msgAuthor="CircleCI ($CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME)" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
@@ -288,7 +290,7 @@ steps:
             --webhookSecret=${<< parameters.zencrepes_secret >>} \
             --sourcePath="artifacts/results/reports" \
             --sourceType="json" \
-            --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
+            --moduleFilepath="artifacts/installed-jahia-modules.json" \
             --name="<< parameters.module_id >>" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
