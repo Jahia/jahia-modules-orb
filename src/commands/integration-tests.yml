@@ -166,6 +166,7 @@ steps:
         cd << parameters.tests_path >>
         export DOCKER_CLIENT_TIMEOUT=120
         export COMPOSE_HTTP_TIMEOUT=120
+        . ./set-env.sh
         docker-compose -f << parameters.docker_compose_file >> up --abort-on-container-exit
         docker cp << parameters.tests_container_name >>:/home/jahians/results ./artifacts
 
