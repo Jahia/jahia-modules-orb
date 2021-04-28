@@ -1,0 +1,16 @@
+description: >
+  Steps to cancel update-signature if needed
+  Aimed at being called in a prestep
+
+steps:
+  - checkout
+  - run:
+      name: Verifying if signature needs to be updated
+      command: |
+        commit_message=$(git log -1 HEAD --pretty=format:%s)
+        if [[ $commit_message != *"[ci sign]"* \
+            && $commit_message != *"[sign ci]"* \
+            && $commit_message != *"[jahia update signature]"* ]]; then
+          echo "Signature update has not been requested. Proceeding without updating the signature"
+          circleci-agent step halt
+        fi
