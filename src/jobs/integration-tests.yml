@@ -208,6 +208,8 @@ steps:
       command: |
         cd << parameters.tests_path >>
         docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
+        docker logs jahia > ./artifacts/results/jahia.log
+        docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log        
 
   # This is not needed since cypress is going to terminat on failure with exit code 1
   - run:
