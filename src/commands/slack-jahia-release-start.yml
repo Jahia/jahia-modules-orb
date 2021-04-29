@@ -1,0 +1,40 @@
+description: >
+  Send a slack notification when a Jahia is started
+
+parameters:
+  release_version:
+    type: string
+    description: "Release version"
+  release_branch:
+    type: string
+    description: "Release branch name"
+  modules_list:
+    type: string
+    defaut: ""
+    description: "List of the released modules"
+  channel_id:
+    type: string
+    description: "Slack channel ID"
+  release_contacts:
+    type: string
+    default: @dms
+    description: "Persons to contact"
+
+steps:
+  - when:
+      steps:
+        - slack/notify:
+            channel: << parameters.channel_id >>
+            custom: |
+              {
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text":
+                      {
+                        "type": "mrkdwn",
+                        "text": "Hello @channel,\nWe are starting the creation of the release candidates for the upcoming Jahia << parameters.release_version >> release.\nFrom now on we are in a code-freeze mode for the following projects:\njahia-private on << parameters.release_branch >>\njahia-pack-private on << parameters.release_branch >>\njahia-ee on << parameters.release_branch >>\n\nAnd these modules: << parameters.modules_list >>\n\nPlease, avoid commits to the aforementioned projects or get in touch with << parameters.release_contacts >> if you have some specific case.\nNote that the commits are not authorized in the aforementioned branches. But you can still work in your development branches and create pull requests."
+                      }
+                  }
+                ]
+              }
