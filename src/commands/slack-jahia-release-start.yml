@@ -10,7 +10,7 @@ parameters:
     description: "Release branch name"
   modules_list:
     type: string
-    defaut: ""
+    default: ""
     description: "List of the released modules"
   channel_id:
     type: string
