@@ -101,14 +101,14 @@ steps:
       command: |
         yarn
         yarn add auto
-        GH_TOKEN=<< parameters.github_api_token >> yarn auto changelog
+        GH_TOKEN=${<< parameters.github_api_token >>} yarn auto changelog
         curl -X PATCH \
         -H "Accept:application/vnd.github.v3+json" \
         -d "{\"tag_name\":\"<< parameters.release_version >>\", \"prerelease\": false, \"draft\": false}" -u \
-        jahia-ci:<< parameters.github_api_token >> https://api.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>
+        jahia-ci:${<< parameters.github_api_token >>} https://api.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>
         curl \
         -H "Content-Type: $(file -b --mime-type CHANGELOG.md)" \
-        -u jahia-ci:<< parameters.github_api_token >>  \
+        -u jahia-ci:${<< parameters.github_api_token >>}  \
         --data-binary @CHANGELOG.md \
         "https://uploads.github.com/repos/<< parameters.github_slug >>/releases/<< parameters.release_id >>/assets?name=$(basename CHANGELOG.md)"
   - run:

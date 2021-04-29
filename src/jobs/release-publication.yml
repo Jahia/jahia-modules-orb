@@ -1,0 +1,43 @@
+description: >
+  Publish a released module
+
+parameters:
+  resource_class:
+    type: string
+    default: "small"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  module_id:
+    type: string
+    description: "ID of the module"
+  release_version:
+    type: string
+    description: "Version of the release"
+  nexus_username:
+    type: env_var_name
+    default: NEXUS_USERNAME
+    description: "Nexus Username"
+  nexus_password:
+    type: env_var_name
+    default: NEXUS_PASSWORD
+    description: "Nexus Password"
+
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: cimg/openjdk:8.0.275-node
+
+steps:
+  - jq/install
+  - run:
+      name: Retrieve staging repository ID and promote staging repository to release on Nexus
+      command: |
+        curl -u ${<< parameters.nexus_username >>}:${<< parameters.nexus_password >>} -H "Accept: application/json" https://devtools.jahia.com/nexus/service/local/staging/profile_repositories > staging-repos.json
+        stagingRepositoryId=$(cat staging-repos.json | jq '.data[] | select(.description|test("<< parameters.module_id >>:<< parameters.release_version >>")) | .repositoryId')
+        echo "Staging repository being promoted: ${stagingRepositoryId}"
+        curl -u ${<< parameters.nexus_username >>}:${<< parameters.nexus_password >>} -H "Accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"autoDropAfterRelease\":true, \"stagedRepositoryIds\":[${stagingRepositoryId}]}}" https://devtools.jahia.com/nexus/service/local/staging/bulk/promote
