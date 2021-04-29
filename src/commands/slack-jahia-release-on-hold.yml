@@ -1,0 +1,53 @@
+description: >
+  Send a slack notification when a Jahia release is ready to be tested
+
+parameters:
+  release_version:
+    type: string
+    description: "Release version"
+  channel_id:
+    type: string
+    description: "Slack channel ID"
+  skip_docker:
+    type: boolean
+    default: false
+    description: "Do not show the docker command"
+  docker_repo:
+    type: string
+    default: "jahia-ee"
+    description: "Docker repository"
+  docker_image_tag:
+    type: string
+    default: "8"
+    description: "Docker tag"
+
+steps:
+  - when:
+      condition:
+        equal: [true, << parameters.skip_docker >>]
+      steps:
+        - run:
+            name: Empty the Docker command variable
+            command: echo 'export DOCKER_COMMAND=""' >> $BASH_ENV
+  - when:
+      condition:
+        equal: [false, << parameters.skip_docker >>]
+      steps:
+        - run:
+            name: Set the Docker command variable
+            command: echo 'export DOCKER_COMMAND="\`\`\`docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >>\`\`\`"' >> $BASH_ENV
+  - slack/notify:
+      channel: << parameters.channel_id >>
+      custom: |
+        {
+          "blocks": [
+            {
+              "type": "section",
+              "text":
+                {
+                  "type": "mrkdwn",
+                  "text": "@channel :white_check_mark: *Jahia << parameters.release_version >> release candidate* has been created and is :raised_hand:awaiting approval from *QA team*, *Security lead* and *Cloud team*:vertical_traffic_light:\n\nArtifacts are available here: <https://qa.jahia.com/shared/releases/releases/jahia-<< parameters.release_version >>|Internal release server> ${DOCKER_COMMAND}"
+                }
+              }
+            ]
+         }
