@@ -52,7 +52,7 @@ steps:
                     "text":
                       {
                         "type": "mrkdwn",
-                        "text": "Hello @channel,\nThe code freeze for the Jahia << parameters.release_version >> release is over.\nRelease artifacts have been published on Nexus and Docker images pushed to DockerHub. Note that the publication of the releated documentation onthe Academy will be done soon.${DOCKER_COMMAND}""
+                        "text": "Hello @channel,\nThe code freeze for the Jahia << parameters.release_version >> release is over.\nRelease artifacts have been published on Nexus and Docker images pushed to DockerHub. Note that the publication of the releated documentation onthe Academy will be done soon.${DOCKER_COMMAND}"
                       }
                   }
                 ]
