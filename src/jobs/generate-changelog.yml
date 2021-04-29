@@ -54,7 +54,7 @@ steps:
         git pull origin $CIRCLE_BRANCH --quiet
   - run:
       name: Update Changelog
-      command: |      
+      command: |
         yarn
         yarn add auto
         GH_TOKEN=${<< parameters.github_api_token >>} yarn auto changelog
