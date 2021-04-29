@@ -40,20 +40,17 @@ steps:
         - run:
             name: Set the Docker command variable
             command: echo 'export DOCKER_COMMAND="\`\`\`docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >>\`\`\`"' >> $BASH_ENV
-  - when:
-      steps:
-        - slack/notify:
-            channel: << parameters.channel_id >>
-            custom: |
-              {
-                "blocks": [
-                  {
-                    "type": "section",
-                    "text":
-                      {
-                        "type": "mrkdwn",
-                        "text": "Hello @channel,\nThe code freeze for the Jahia << parameters.release_version >> release is over.\nRelease artifacts have been published on Nexus and Docker images pushed to DockerHub. Note that the publication of the releated documentation onthe Academy will be done soon.${DOCKER_COMMAND}"
-                      }
-                  }
-                ]
-              }
+  - slack/notify:
+      channel: << parameters.channel_id >>
+      custom: |
+        {
+          "blocks": [
+            {
+              "type": "section",
+              "text":
+                {
+                  "text": "Hello @channel,\nThe code freeze for the Jahia << parameters.release_version >> release is over.\nRelease artifacts have been published on Nexus and Docker images pushed to DockerHub. Note that the publication of the releated documentation onthe Academy will be done soon.${DOCKER_COMMAND}"
+                }
+            }
+          ]
+        }
