@@ -46,7 +46,7 @@ steps:
               "text":
                 {
                   "type": "mrkdwn",
-                  "text": "Jahia << parameters.release_version >> release candidate has been created and is available in Nexus staging repository.\n\nAwaiting Approval from QA team, Security lead and Cloud team :raised_hand:\nArtifacts are availabe here: https://qa.jahia.com/shared/releases/releases/jahia-<< parameters.release_version >>${DOCKER_COMMAND}"
+                  "text": "@channel :white_check_mark: *Jahia << parameters.release_version >> release candidate* has been created and is :raised_hand:awaiting approval from *QA team*, *Security lead* and *Cloud team*:vertical_traffic_light:\n\nArtifacts are available here: <https://qa.jahia.com/shared/releases/releases/jahia-<< parameters.release_version >>|Internal release server> ${DOCKER_COMMAND}"
                 }
               }
             ]

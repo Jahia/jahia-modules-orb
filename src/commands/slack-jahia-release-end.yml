@@ -49,7 +49,8 @@ steps:
               "type": "section",
               "text":
                 {
-                  "text": "Hello @channel,\nThe code freeze for the Jahia << parameters.release_version >> release is over.\nRelease artifacts have been published on Nexus and Docker images pushed to DockerHub. Note that the publication of the releated documentation onthe Academy will be done soon.${DOCKER_COMMAND}"
+                  "type": "mrkdwn",
+                  "text": "@channel :checkered_flag: The code freeze for the *Jahia << parameters.release_version >> release* is over.\n:loudspeaker: Release artifacts have been published on Nexus and Docker images pushed to DockerHub :champagne:${DOCKER_COMMAND}\n:soon: Note that the publication of the related documentation on the Academy will be done soon."
                 }
             }
           ]
