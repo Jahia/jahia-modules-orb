@@ -10,5 +10,5 @@ usage:
       jobs:
         - jahia-modules-orb/sonar-analysis:
             primary_release_branch: main
-            module_id: samdbox
+            module_id: sanbox
             github_slug: jahia/sandbox
