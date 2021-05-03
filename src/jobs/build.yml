@@ -45,7 +45,10 @@ steps:
       command: |
         mkdir /tmp/artifacts/
         cp /home/circleci/source/target/*.jar /tmp/artifacts/
-        cp /home/circleci/source/target/*source-release.zip /tmp/artifacts/
+        if [ -f /home/circleci/source/target/*source-release.zip ]; then
+          echo "A source file is present, copying it to the artifacts folder"
+          cp /home/circleci/source/target/*source-release.zip /tmp/artifacts/
+        fi
   - store_artifacts:
       path: /tmp/artifacts/
   - persist_to_workspace:
