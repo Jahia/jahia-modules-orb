@@ -34,16 +34,16 @@ steps:
       keys:
         - v1-npm-{{ checksum "yarn.lock" }}-{{ checksum "<< parameters.tests_path >>yarn.lock" }}
   - run:
-      name: Run yarn if packages.json exists in module folder
+      name: Run yarn if package.json exists in module folder
       command: |
-        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>packages.json" ]]; then
+        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>package.json" ]]; then
           cd << parameters.module_path >>
           yarn
         fi
   - run:
       name: Run yarn if packages.json exists in test folder
       command: |
-        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>packages.json" ]]; then
+        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
           cd << parameters.module_path >>
           yarn
         fi
