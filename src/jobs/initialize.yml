@@ -32,7 +32,7 @@ steps:
       working_directory: << parameters.working_directory >>
   - restore_cache:
       keys:
-        - v1-npm-{{ checksum "yarn.lock" }}-{{ checksum "<< parameters.tests_path >>yarn.lock" }}
+        - v1-npm-{{ checksum "yarn.lock" }}
   - run:
       name: Run yarn if package.json exists in module folder
       command: |
