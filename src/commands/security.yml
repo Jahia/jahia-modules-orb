@@ -25,14 +25,14 @@ steps:
   - run:
       name: Audit-ci module (javascript only)
       command: |
-        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>packages.json" ]]; then
+        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>package.json" ]]; then
           cd << parameters.module_path >>
           audit-ci --<< parameters.auditci_level >>
         fi
   - run:
       name: Lint tests (javascript only)
       command: |
-        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>packages.json" ]]; then
+        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
           cd << parameters.tests_path >>
           audit-ci --<< parameters.auditci_level >>
         fi
