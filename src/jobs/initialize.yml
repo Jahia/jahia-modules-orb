@@ -44,7 +44,7 @@ steps:
       name: Run yarn if packages.json exists in test folder
       command: |
         if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
-          cd << parameters.module_path >>
+          cd << parameters.tests_path >>
           yarn
         fi
   - save_cache:
