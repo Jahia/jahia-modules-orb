@@ -9,7 +9,7 @@ description: >
 parameters:
   resource_class:
     type: string
-    default: "large"
+    default: "xlarge"
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
   working_directory:
     type: string
