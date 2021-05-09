@@ -13,6 +13,10 @@ parameters:
     type: string
     default: "~/source"
     description: "Working directory for the job"
+  module_id:
+    type: string
+    default: "module_id"
+    description: "ID of the module being built. This is only useful when the module built is part of a package."
 
 working_directory: << parameters.working_directory >>
 
@@ -49,8 +53,41 @@ steps:
           echo "A source file is present, copying it to the artifacts folder"
           cp /home/circleci/source/target/*source-release.zip /tmp/artifacts/
         fi
+        if [ -d /home/circleci/source/<< parameters.module_id >>/ ]; then
+          echo "Copying jar from: /home/circleci/source/<< parameters.module_id >>/"
+          cp /home/circleci/source/<< parameters.module_id >>/target/*.jar /tmp/artifacts/
+        fi
+  # Note: The two steps below are derived from graphql-dxm-provider setup
+  # This might not be applicable to other modules for the same complexity
+  - run:
+      name: Copy test report (if present)
+      command: |
+        mkdir /tmp/artifacts/test-results/
+        if [ -d /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/ ]; then
+          cp /home/circleci/source/graphql-dxm-provider/target/surefire-reports/*.xml /tmp/artifacts/test-results/ || :
+        fi
+  - run:
+      name: Copy test report details (if present)
+      command: |
+        if [ -d /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/ ]; then
+          echo "Folder exists: /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/"
+          mkdir /tmp/artifacts/surefire-reports/
+          cp /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/*.txt /tmp/artifacts/surefire-reports/ || :
+        fi
+        if [ -d /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/testng-junit-results/ ]; then
+          echo "Folder exists: /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/testng-junit-results/"
+          mkdir /tmp/artifacts/surefire-reports/testng-junit-results/
+          cp /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/testng-junit-results/* /tmp/artifacts/surefire-reports/testng-junit-results/ || :
+        fi
+        if [ -d /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/testng-junit-results/junitreports/ ]; then
+          echo "Folder exists: /home/circleci/source/<< parameters.module_id >>/target/surefire-reports/testng-junit-results/junitreports/"
+          mkdir /tmp/artifacts/surefire-reports/testng-junit-results/junitreports/
+          cp /home/circleci/source/graphql-dxm-provider/target/surefire-reports/testng-junit-results/junitreports/* /tmp/artifacts/surefire-reports/testng-junit-results/junitreports/ || :
+        fi
   - store_artifacts:
       path: /tmp/artifacts/
+  - store_test_results:
+      path: /tmp/artifacts/test-results/
   - persist_to_workspace:
       root: << parameters.working_directory >>
       paths:
