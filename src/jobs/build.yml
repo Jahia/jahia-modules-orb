@@ -56,6 +56,10 @@ steps:
         if [ -d /home/circleci/source/<< parameters.module_id >>/ ]; then
           echo "Copying jar from: /home/circleci/source/<< parameters.module_id >>/"
           cp /home/circleci/source/<< parameters.module_id >>/target/*.jar /tmp/artifacts/
+          if [ ! -d /home/circleci/source/target/ ]; then
+            mkdir /home/circleci/source/target/
+          fi
+          cp /home/circleci/source/<< parameters.module_id >>/target/*.jar /home/circleci/source/target/
         fi
   # Note: The two steps below are derived from graphql-dxm-provider setup
   # This might not be applicable to other modules for the same complexity
