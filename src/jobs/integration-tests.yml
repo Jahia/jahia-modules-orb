@@ -197,6 +197,7 @@ steps:
   # Sleep 30s to give containers time to start
   - run:
       name: Print the currently running containers
+      background: true
       command: |
         cd << parameters.tests_path >>
         sleep 30
