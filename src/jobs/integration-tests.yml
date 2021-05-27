@@ -192,6 +192,16 @@ steps:
         docker build -t << parameters.tests_image >> .
         docker save -o tests_image.tar << parameters.tests_image >>
 
+  # Run a background task to display the running containers and their hash
+  # This is used to verify that the right containers are running
+  # Sleep 30s to give containers time to start
+  - run:
+      name: Print the currently running containers
+      command: |
+        cd << parameters.tests_path >>
+        sleep 30
+        docker ps --all --no-trunc > ./artifacts/results/docker-ps.log
+
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
   - run:
