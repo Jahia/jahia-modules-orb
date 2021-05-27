@@ -192,6 +192,17 @@ steps:
         docker build -t << parameters.tests_image >> .
         docker save -o tests_image.tar << parameters.tests_image >>
 
+  # Run a background task to display the running containers and their hash
+  # This is used to verify that the right containers are running
+  # Sleep 30s to give containers time to start
+  - run:
+      name: Print the currently running containers
+      background: true
+      command: |
+        cd << parameters.tests_path >>
+        sleep 30
+        docker ps --all --no-trunc 2>&1 | tee ./artifacts/docker-ps.log
+
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
   - run:
@@ -222,6 +233,7 @@ steps:
         docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
         docker logs jahia > ./artifacts/results/jahia.log
         docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log
+        cp ./artifacts/docker-ps.log ./artifacts/results/
 
   # This is not needed since cypress is going to terminat on failure with exit code 1
   - run:
