@@ -200,7 +200,7 @@ steps:
       command: |
         cd << parameters.tests_path >>
         sleep 30
-        docker ps --all --no-trunc > ./artifacts/results/docker-ps.log
+        docker ps --all --no-trunc 2>&1 | tee ./artifacts/docker-ps.log
 
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
@@ -232,6 +232,7 @@ steps:
         docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
         docker logs jahia > ./artifacts/results/jahia.log
         docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log
+        cp ./artifacts/docker-ps.log ./artifacts/results/
 
   # This is not needed since cypress is going to terminat on failure with exit code 1
   - run:
