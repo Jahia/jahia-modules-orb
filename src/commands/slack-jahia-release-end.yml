@@ -8,10 +8,6 @@ parameters:
   channel_id:
     type: string
     description: "Slack channel ID"
-  release_contacts:
-    type: string
-    default: "@dms"
-    description: "Persons to contact"
   skip_docker:
     type: boolean
     default: false
