@@ -6,9 +6,6 @@ parameters:
     type: string
     default: "main"
     description: "Name of the primary release branch (master, main, ...)"
-  module_id:
-    type: string
-    description: "ID of the module"
   github_slug:
     type: string
     description: "GitHub SLUG of the module (for example: jahia/sandbox)"
@@ -45,7 +42,6 @@ steps:
         - v2-sonar-owasp-dependencies-
   - sonar-analysis:
       github_slug: << parameters.github_slug >>
-      module_id: << parameters.module_id >>
       primary_release_branch: << parameters.primary_release_branch >>
   - save_cache:
       paths:
