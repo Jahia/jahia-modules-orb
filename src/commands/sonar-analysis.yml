@@ -6,9 +6,6 @@ parameters:
     type: string
     default: "main"
     description: "Name of the primary release branch (master, main, ...)"
-  module_id:
-    type: string
-    description: "ID of the module"
   github_slug:
     type: string
     description: "GitHub SLUG of the module (for example: jahia/sandbox)"
