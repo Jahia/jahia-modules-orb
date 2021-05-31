@@ -8,10 +8,6 @@ parameters:
   channel_id:
     type: string
     description: "Slack channel ID"
-  release_contacts:
-    type: string
-    default: "@dms"
-    description: "Persons to contact"
   skip_docker:
     type: boolean
     default: false
@@ -32,14 +28,18 @@ steps:
       steps:
         - run:
             name: Empty the Docker command variable
-            command: echo 'export DOCKER_COMMAND=""' >> $BASH_ENV
+            command: |
+              echo 'export DOCKER_TEXT=""' >> $BASH_ENV
+              echo 'export DOCKER_COMMAND=""' >> $BASH_ENV
   - when:
       condition:
         equal: [false, << parameters.skip_docker >>]
       steps:
         - run:
             name: Set the Docker command variable
-            command: echo 'export DOCKER_COMMAND="\`\`\`docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >>\`\`\`"' >> $BASH_ENV
+            command: |
+              echo 'export DOCKER_TEXT=" and Docker images pushed to DockerHub"' >> $BASH_ENV
+              echo 'export DOCKER_COMMAND="\`\`\`docker pull jahia/<< parameters.docker_repo >>:<< parameters.docker_image_tag >>\`\`\`"' >> $BASH_ENV
   - slack/notify:
       channel: << parameters.channel_id >>
       custom: |
@@ -50,7 +50,7 @@ steps:
               "text":
                 {
                   "type": "mrkdwn",
-                  "text": "@channel :checkered_flag: The code freeze for the *Jahia << parameters.release_version >> release* is over.\n:loudspeaker: Release artifacts have been published on Nexus and Docker images pushed to DockerHub :champagne:${DOCKER_COMMAND}\n:soon: Note that the publication of the related documentation on the Academy will be done soon."
+                  "text": "@channel :checkered_flag: The code freeze for the *Jahia << parameters.release_version >> release* is over.\n:loudspeaker: Release artifacts have been published on Nexus${DOCKER_TEXT} :champagne:${DOCKER_COMMAND}\n:soon: Note that the related documentation on the Academy will be published soon."
                 }
             }
           ]
