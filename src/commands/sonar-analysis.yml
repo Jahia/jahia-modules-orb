@@ -32,10 +32,10 @@ steps:
               -Dsonar.pullrequest.github.repository=<< parameters.github_slug >>
         elif [[ "$CIRCLE_BRANCH" == << parameters.primary_release_branch >> ]]; then
           echo "Executing an analysis on the main branch"
-          mvn -s .circleci/.circleci.settings.xml dependency-check:aggregate sonar:sonar \
+          mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:aggregate sonar:sonar \
               $DEPENDENCY_CHECK_SETTINGS
         else
           echo "Executing an analysis on branch: $CIRCLE_BRANCH"
-          mvn -s .circleci/.circleci.settings.xml dependency-check:aggregate sonar:sonar \
+          mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:aggregate sonar:sonar \
               -Dsonar.branch.name=$CIRCLE_BRANCH $DEPENDENCY_CHECK_SETTINGS
         fi
