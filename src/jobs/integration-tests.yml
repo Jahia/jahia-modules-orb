@@ -194,14 +194,14 @@ steps:
 
   # Pull the latest version of ${JAHIA_IMAGE}
   - run:
-      name: Pull the latest version of the docker images listed in compose
+      name: Pull the latest version of Jahia: ${JAHIA_IMAGE}
       command: |
         cd << parameters.tests_path >>
         . ./set-env.sh
         echo "List of docker images in local cache PRIOR pull" > ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
-        docker-compose -f << parameters.docker_compose_file >> pull
+        docker pull ${JAHIA_IMAGE}
         echo "List of docker images in local cache AFTER pull" > ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
