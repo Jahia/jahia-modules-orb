@@ -10,7 +10,7 @@ parameters:
     type: string
     description: "GitHub SLUG of the module (for example: jahia/sandbox)"
   no_output_timeout:
-    description: Specify period of time has passed with no output.
+    description: Maximum acceptable period of time to be passed with no output.
     type: string
     default: "15m"
 steps:
