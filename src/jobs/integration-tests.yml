@@ -194,7 +194,7 @@ steps:
 
   # Pull the latest version of ${JAHIA_IMAGE}
   - run:
-      name: Pull the latest version of Jahia: ${JAHIA_IMAGE}
+      name: Pull the latest version of Jahia
       command: |
         cd << parameters.tests_path >>
         . ./set-env.sh
