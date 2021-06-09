@@ -9,6 +9,10 @@ parameters:
   github_slug:
     type: string
     description: "GitHub SLUG of the module (for example: jahia/sandbox)"
+  no_output_timeout:
+    description: Specify period of time has passed with no output.
+    type: string
+    default: "15m"
 steps:
   - run:
       name: Sonar Release branch analysis
@@ -39,3 +43,4 @@ steps:
           mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:aggregate sonar:sonar \
               -Dsonar.branch.name=$CIRCLE_BRANCH $DEPENDENCY_CHECK_SETTINGS
         fi
+      no_output_timeout: << parameters.no_output_timeout >>
