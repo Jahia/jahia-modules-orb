@@ -202,10 +202,10 @@ steps:
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
         docker-compose -f << parameters.docker_compose_file >> pull
-        echo "List of docker images in local cache AFTER pull" > ./artifacts/docker.log        
+        echo "List of docker images in local cache AFTER pull" > ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
-        
+
   # Run a background task to display the running containers and their hash
   # This is used to verify that the right containers are running
   # Sleep 30s to give containers time to start
@@ -213,7 +213,7 @@ steps:
       name: Print the currently running containers
       background: true
       command: |
-        cd << parameters.tests_path >>        
+        cd << parameters.tests_path >>
         sleep 30
         docker ps --all --no-trunc 2>&1 | tee -a ./artifacts/docker.log
 
