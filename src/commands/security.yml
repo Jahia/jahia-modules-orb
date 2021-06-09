@@ -35,7 +35,7 @@ steps:
           audit-ci --<< parameters.auditci_level >>
         fi
   - run:
-      name: Lint tests (javascript only)
+      name: Audit-ci tests (javascript only)
       command: |
         if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
           cd << parameters.tests_path >>
