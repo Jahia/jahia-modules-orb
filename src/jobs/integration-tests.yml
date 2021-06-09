@@ -194,7 +194,7 @@ steps:
 
   # Pull the latest version of ${JAHIA_IMAGE}
   - run:
-      name: Pull the latest version of Jahia
+      name: Pull the latest version of Jahia and print docker images cache to console
       command: |
         cd << parameters.tests_path >>
         . ./set-env.sh
