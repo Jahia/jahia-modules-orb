@@ -17,6 +17,10 @@ parameters:
     type: string
     default: "~/source"
     description: "Working directory for the job"
+  no_output_timeout:
+    type: string
+    default: "15m"
+    description: Maximum acceptable period of time to be passed with no output.
 
 working_directory: << parameters.working_directory >>
 
@@ -43,6 +47,7 @@ steps:
   - sonar-analysis:
       github_slug: << parameters.github_slug >>
       primary_release_branch: << parameters.primary_release_branch >>
+      no_output_timeout: << parameters.no_output_timeout >>
   - save_cache:
       paths:
         - ~/.owasp/dependency-check-data

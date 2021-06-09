@@ -192,6 +192,20 @@ steps:
         docker build -t << parameters.tests_image >> .
         docker save -o tests_image.tar << parameters.tests_image >>
 
+  # Pull the latest version of ${JAHIA_IMAGE}
+  - run:
+      name: Pull the latest version of Jahia and print docker images cache to console
+      command: |
+        cd << parameters.tests_path >>
+        . ./set-env.sh
+        echo "List of docker images in local cache PRIOR pull" > ./artifacts/docker.log
+        docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
+        echo "--------------------------------------------------" >> ./artifacts/docker.log
+        docker pull ${JAHIA_IMAGE}
+        echo "List of docker images in local cache AFTER pull" > ./artifacts/docker.log
+        docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
+        echo "--------------------------------------------------" >> ./artifacts/docker.log
+
   # Run a background task to display the running containers and their hash
   # This is used to verify that the right containers are running
   # Sleep 30s to give containers time to start
@@ -201,7 +215,7 @@ steps:
       command: |
         cd << parameters.tests_path >>
         sleep 30
-        docker ps --all --no-trunc 2>&1 | tee ./artifacts/docker-ps.log
+        docker ps --all --no-trunc 2>&1 | tee -a ./artifacts/docker.log
 
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
@@ -212,7 +226,6 @@ steps:
         export DOCKER_CLIENT_TIMEOUT=120
         export COMPOSE_HTTP_TIMEOUT=120
         . ./set-env.sh
-        docker pull ${JAHIA_IMAGE}
         docker-compose -f << parameters.docker_compose_file >> up --abort-on-container-exit
 
   - run:
@@ -233,7 +246,7 @@ steps:
         docker-compose logs -t --tail="all" > ./artifacts/results/all-containers.log
         docker logs jahia > ./artifacts/results/jahia.log
         docker logs << parameters.tests_container_name >> > ./artifacts/results/<< parameters.tests_container_name >>.log
-        cp ./artifacts/docker-ps.log ./artifacts/results/
+        cp ./artifacts/docker.log ./artifacts/results/
 
   # This is not needed since cypress is going to terminat on failure with exit code 1
   - run:

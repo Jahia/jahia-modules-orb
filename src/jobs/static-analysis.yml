@@ -30,7 +30,11 @@ parameters:
   auditci_level:
     type: string
     default: "moderate"
-    description: "Security level to check against, will fail the step if higher"
+    description: "Security level to check against for the module codebase, will fail the step if higher"
+  auditci_level_tests:
+    type: string
+    default: "critical"
+    description: "Security level to check against for the tests codebase, will fail the step if higher"
 
 working_directory: << parameters.working_directory >>
 
@@ -54,3 +58,4 @@ steps:
       module_path: << parameters.module_path >>
       tests_path: << parameters.tests_path >>
       auditci_level: << parameters.auditci_level >>
+      auditci_level_tests: << parameters.auditci_level_tests >>

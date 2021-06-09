@@ -17,7 +17,12 @@ parameters:
   auditci_level:
     type: string
     default: "moderate"
-    description: "Security level to check against, will fail the step if higher"
+    description: "Security level to check against for the module codebase, will fail the step if higher"
+  auditci_level_tests:
+    type: string
+    default: "critical"
+    description: "Security level to check against for the tests codebase, will fail the step if higher"
+
 steps:
   - run:
       name: Install Audit-ci
@@ -30,9 +35,9 @@ steps:
           audit-ci --<< parameters.auditci_level >>
         fi
   - run:
-      name: Lint tests (javascript only)
+      name: Audit-ci tests (javascript only)
       command: |
         if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
           cd << parameters.tests_path >>
-          audit-ci --<< parameters.auditci_level >>
+          audit-ci --<< parameters.auditci_level_tests >>
         fi
