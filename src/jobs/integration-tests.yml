@@ -134,7 +134,7 @@ parameters:
   ci_postrun_script:
     type: string
     default: "ci.postrun.sh"
-    description: "Script to run immediately after the ci_start_script"
+    description: "Script to run prior to saving the artifacts"
 
 working_directory: << parameters.working_directory >>
 
