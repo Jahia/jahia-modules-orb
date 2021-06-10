@@ -202,7 +202,7 @@ steps:
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
         docker pull ${JAHIA_IMAGE}
-        echo "List of docker images in local cache AFTER pull" > ./artifacts/docker.log
+        echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
 
