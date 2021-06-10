@@ -98,7 +98,7 @@ parameters:
   slack_webhook_notifications:
     type: env_var_name
     default: SLACK_WEBHOOK_QA_NOTIFICATIONS
-    description: "Webhook to be used for failyre notifications"
+    description: "Webhook to be used for failure notifications"
   slack_webhook_notifications_all:
     type: env_var_name
     default: SLACK_WEBHOOK_QA_NOTIFICATIONS_ALL
