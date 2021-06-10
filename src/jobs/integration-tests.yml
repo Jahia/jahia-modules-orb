@@ -237,7 +237,7 @@ steps:
         export COMPOSE_HTTP_TIMEOUT=120
         . ./set-env.sh
         if [[ -f "<< parameters.ci_startup_script >>" ]]; then
-          echo "Startup script is present"        
+          echo "Startup script is present"
           bash << parameters.ci_startup_script >>
         else
           docker-compose -f << parameters.docker_compose_file >> up --abort-on-container-exit
@@ -276,7 +276,7 @@ steps:
         fi
 
   # If a ci.postrun.sh script is present, this script is executed
-  # The main purpose of this script is to export additional artifacts, 
+  # The main purpose of this script is to export additional artifacts,
   # capture logs from other containers, ...
   - run:
       name: Execute postrun sript (if present)
