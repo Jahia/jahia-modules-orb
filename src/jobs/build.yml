@@ -33,7 +33,7 @@ steps:
         - v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
   - run:
       name: Build package and load all dependencies into local Maven repository
-      command: mvn -s .circleci/.circleci.settings.xml clean package de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+      command: mvn -s .circleci/.circleci.settings.xml clean install de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
   # Environment provisioning is sometimes dependent upon dependencies build during mvn clean package/install
   # This step copies those dependencies and make them available for further actions,
   # such as being used to provision a running Jahia with a set of freshly built artifacts
