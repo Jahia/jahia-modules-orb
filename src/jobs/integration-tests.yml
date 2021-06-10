@@ -280,6 +280,7 @@ steps:
   # capture logs from other containers, ...
   - run:
       name: Execute postrun sript (if present)
+      when: always
       command: |
         cd << parameters.tests_path >>
         export DOCKER_CLIENT_TIMEOUT=120
