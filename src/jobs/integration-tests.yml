@@ -186,7 +186,11 @@ steps:
       name: Preparing build artifacts
       command: |
         if [ << parameters.should_skip_artifacts >> == false ]; then
-          sudo cp -r /home/circleci/source/target/*.jar << parameters.tests_path >>artifacts/
+          find . -type f -path '*/target/*-SNAPSHOT.jar' -exec cp '{}' << parameters.tests_path >>artifacts/ ';' || :
+          if [ -d ./build-dependencies/ ]; then
+            mkdir -p << parameters.tests_path >>artifacts/build-dependencies
+            cp ./build-dependencies/* << parameters.tests_path >>artifacts/build-dependencies/
+          fi
         fi
 
   # We always build the test container from scratch
