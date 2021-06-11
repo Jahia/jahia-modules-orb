@@ -135,6 +135,10 @@ parameters:
     type: string
     default: "ci.postrun.sh"
     description: "Script to run prior to saving the artifacts"
+  no_output_timeout:
+    type: string
+    default: "10m"
+    description: "Elapsed time the command can run without output. Since different modules are going to have different runtime, this allow fine-tuning per module."
 
 working_directory: << parameters.working_directory >>
 
@@ -247,6 +251,7 @@ steps:
   # for us will be the test container
   - run:
       name: Spin-up the containers
+      no_output_timeout: << parameters.no_output_timeout >>
       command: |
         cd << parameters.tests_path >>
         export DOCKER_CLIENT_TIMEOUT=120
