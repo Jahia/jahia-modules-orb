@@ -247,7 +247,7 @@ steps:
         cd << parameters.tests_path >>
         export DOCKER_CLIENT_TIMEOUT=120
         export COMPOSE_HTTP_TIMEOUT=120
-        . ./set-env.sh        
+        . ./set-env.sh
         docker-compose logs -f
 
   # Using abort-on-container-exit will exit on first container failure, which
