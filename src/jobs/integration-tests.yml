@@ -190,7 +190,10 @@ steps:
           if [ -d ./build-dependencies/ ]; then
             mkdir -p << parameters.tests_path >>artifacts/build-dependencies
             cp ./build-dependencies/* << parameters.tests_path >>artifacts/build-dependencies/
+            echo "Content of build-dependencies"
+            ls -lah << parameters.tests_path >>artifacts/build-dependencies/
           fi
+          ls -lah << parameters.tests_path >>artifacts
         fi
 
   # We always build the test container from scratch
