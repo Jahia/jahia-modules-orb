@@ -70,7 +70,7 @@ parameters:
     description: "Branch containing the tests (if different from current)"
   jahia_license:
     type: env_var_name
-    default: JAHIA_LICENSE_801_FULL
+    default: JAHIA_LICENSE_8x_FULL
     description: "Base64 encoded License"
   jcustomer_image:
     type: string
