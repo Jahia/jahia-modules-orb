@@ -238,18 +238,6 @@ steps:
         sleep 30
         docker ps --all --no-trunc 2>&1 | tee -a ./artifacts/docker.log
 
-  # This allows you to see compose logs without having to wait for those
-  # to be saved as artifacts at the end of the run
-  - run:
-      name: Print docker-compose logs in follow mode
-      background: true
-      command: |
-        cd << parameters.tests_path >>
-        export DOCKER_CLIENT_TIMEOUT=120
-        export COMPOSE_HTTP_TIMEOUT=120
-        . ./set-env.sh
-        docker-compose logs -f
-
   # Using abort-on-container-exit will exit on first container failure, which
   # for us will be the test container
   - run:
