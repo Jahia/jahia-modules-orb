@@ -164,7 +164,7 @@ steps:
         echo "export MANIFEST=<< parameters.tests_manifest >>" >> $BASH_ENV
         echo "export JAHIA_IMAGE=<< parameters.jahia_image >>" >> $BASH_ENV
         echo "export JAHIA_LICENSE=${<< parameters.jahia_license >>}" >> $BASH_ENV
-        echo "export JAHIA_CLUSTER_ENABLED=${<< parameters.jahia_cluster_enabled >>}" >> $BASH_ENV
+        echo "export JAHIA_CLUSTER_ENABLED=<< parameters.jahia_cluster_enabled >>" >> $BASH_ENV
         echo "export TESTS_IMAGE=<< parameters.tests_image >>" >> $BASH_ENV
         echo "export JCUSTOMER_IMAGE=<< parameters.jcustomer_image >>" >> $BASH_ENV
         echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
