@@ -24,10 +24,6 @@ steps:
           -DretireJsAnalyzerEnabled=false -DnodeAnalyzerEnabled=false -DdataDirectory=/home/circleci/.owasp/dependency-check-data
       command: |
         if [[ ! -z "$CIRCLE_PULL_REQUEST" ]]; then
-          # echo "Git custom command to fix circle-ci checkout for sonar analysis"
-          git fetch --all
-          git branch -D << parameters.primary_release_branch >>
-          git rev-parse origin/<< parameters.primary_release_branch >>
           echo "Executing a PR based analysis"
           mvn -s .circleci/.circleci.settings.xml sonar:sonar \
               -Dsonar.pullrequest.branch=$CIRCLE_BRANCH \
