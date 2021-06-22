@@ -167,7 +167,7 @@ steps:
       name: Install nodeJS on machine executor
       command: |
         set +e
-        cd << pipeline.parameters.TESTS_PATH >>
+        cd << parameters.tests_path >>
         export NVM_DIR="/opt/circleci/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         nvm install v12
