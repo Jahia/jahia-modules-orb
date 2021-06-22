@@ -309,7 +309,13 @@ steps:
   - run:
       name: Install jahia-reporter
       when: always
-      command: sudo npm install -g jahia-reporter
+      command: |
+        if [ << parameters.parent_executor >> == "machine" ]; then
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm alias default v12
+        fi
+        sudo npm install -g jahia-reporter
   - run:
       name: Publish results to testrail
       when: always
