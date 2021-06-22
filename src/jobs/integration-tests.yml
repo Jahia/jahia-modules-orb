@@ -111,6 +111,10 @@ parameters:
     type: boolean
     default: false
     description: "Should zencrepes notifications be skipped ?"
+  should_build_testsimage:
+    type: boolean
+    default: true
+    description: "Should the orb attend to build the test image"
   zencrepes_secret:
     type: env_var_name
     default: ZENCREPES_WEBHOOK_SECRET
@@ -211,12 +215,14 @@ steps:
   - run:
       name: Build the tests image
       command: |
-        cd << parameters.tests_path >>
-        if [[ "<< parameters.tests_container_branch >>" != "" ]]; then
-          git checkout << parameters.tests_container_branch >>
+        if [ << parameters.should_build_testsimage >> == true ]; then
+          cd << parameters.tests_path >>
+          if [[ "<< parameters.tests_container_branch >>" != "" ]]; then
+            git checkout << parameters.tests_container_branch >>
+          fi
+          docker build -t << parameters.tests_image >> .
+          docker save -o tests_image.tar << parameters.tests_image >>
         fi
-        docker build -t << parameters.tests_image >> .
-        docker save -o tests_image.tar << parameters.tests_image >>
 
   # Pull the latest version of ${JAHIA_IMAGE}
   - run:
