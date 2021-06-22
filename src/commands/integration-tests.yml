@@ -310,19 +310,23 @@ steps:
       name: Install jahia-reporter
       when: always
       command: |
-        if [ << parameters.parent_executor >> == "machine" ]; then
+        if [ "<< parameters.parent_executor >>" == "machine" ]; then
+            echo "Running in a machin executor"
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm alias default v12
+            npm install -g jahia-reporter
+        else
+          sudo npm install -g jahia-reporter
         fi
-        sudo npm install -g jahia-reporter
   - run:
       name: Publish results to testrail
       when: always
       command: |
         if [ << parameters.should_skip_testrail >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
-          if [ << parameters.parent_executor >> == "machine" ]; then
+          if [ "<< parameters.parent_executor >>" == "machine" ]; then
+              echo "Running in a machin executor"
               export NVM_DIR="/opt/circleci/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
               nvm alias default v12
@@ -342,7 +346,8 @@ steps:
       command: |
         if [ << parameters.should_skip_notifications >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
-          if [ << parameters.parent_executor >> == "machine" ]; then
+          if [ "<< parameters.parent_executor >>" == "machine" ]; then
+              echo "Running in a machin executor"
               export NVM_DIR="/opt/circleci/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
               nvm alias default v12
@@ -363,7 +368,8 @@ steps:
       command: |
         if [ << parameters.should_skip_zencrepes >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
-          if [ << parameters.parent_executor >> == "machine" ]; then
+          if [ "<< parameters.parent_executor >>" == "machine" ]; then
+              echo "Running in a machin executor"
               export NVM_DIR="/opt/circleci/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
               nvm alias default v12
