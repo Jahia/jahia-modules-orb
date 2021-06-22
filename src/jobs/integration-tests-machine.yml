@@ -167,12 +167,12 @@ steps:
       name: Install nodeJS on machine executor
       command: |
         set +e
-        cd << parameters.tests_path >>
-        export NVM_DIR="/opt/circleci/.nvm"
+        export NVM_DIR="/opt/circleci/.nvm" 
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         nvm install v12
         nvm alias default v12
   - integration-tests:
+      parent_executor: "machine"
       working_directory: << parameters.working_directory >>
       primary_release_branch: << parameters.primary_release_branch >>
       nexus_username: << parameters.nexus_username >>

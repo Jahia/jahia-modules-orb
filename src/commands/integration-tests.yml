@@ -2,6 +2,10 @@ description: >
   Perform the integration tests
 
 parameters:
+  parent_executor:
+    type: string
+    default: "docker"
+    description: "Specify if the job triggered by a docker or machine executor"
   working_directory:
     type: string
     default: "~/source"
@@ -312,6 +316,11 @@ steps:
       command: |
         if [ << parameters.should_skip_testrail >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
+          if [ << parameters.parent_executor >> == "machine" ]; then
+              export NVM_DIR="/opt/circleci/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              nvm alias default v12
+          fi
           jahia-reporter testrail \
             --testrailUsername=${<< parameters.testrail_username >>} \
             --testrailPassword=${<< parameters.testrail_password >>} \
@@ -327,6 +336,11 @@ steps:
       command: |
         if [ << parameters.should_skip_notifications >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
+          if [ << parameters.parent_executor >> == "machine" ]; then
+              export NVM_DIR="/opt/circleci/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              nvm alias default v12
+          fi
           jahia-reporter slack \
             --webhook=${<< parameters.slack_webhook_notifications >>} \
             --webhookAll=${<< parameters.slack_webhook_notifications_all >>} \
@@ -343,6 +357,11 @@ steps:
       command: |
         if [ << parameters.should_skip_zencrepes >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
+          if [ << parameters.parent_executor >> == "machine" ]; then
+              export NVM_DIR="/opt/circleci/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              nvm alias default v12
+          fi
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
             --webhookSecret=${<< parameters.zencrepes_secret >>} \
