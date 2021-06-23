@@ -48,7 +48,7 @@ steps:
       name: Prepare artifacts
       command: |
         mkdir /tmp/artifacts/
-        find . -type f -path '*/target/*-SNAPSHOT.jar' -exec cp '{}' /tmp/artifacts/ ';' || :
+        find . -type f -path '*/target/*-SNAPSHOT*.jar' -exec cp '{}' /tmp/artifacts/ ';' || :
         if [ -f /home/circleci/source/target/*source-release.zip ]; then
           echo "A source file is present, copying it to the artifacts folder"
           cp /home/circleci/source/target/*source-release.zip /tmp/artifacts/ || :

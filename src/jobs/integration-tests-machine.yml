@@ -1,5 +1,5 @@
 description: >
-  Runs the integration testing suite on a remote Docker
+  Runs the integration testing suite on a machine executor
   At the end of its execution, the test container must contain a folder at: /home/jahians/results, this folder must contain:
    - A marker file (test_success or test_failure) indicating the outcome of the run
    - Run reports, in json format, in a reports/ folder
@@ -13,6 +13,10 @@ parameters:
     type: string
     default: "xlarge"
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  machine_image:
+    type: string
+    default: "ubuntu-2004:202104-01"
+    description: "Ubuntu image to run on the machine as per https://circleci.com/docs/2.0/configuration-reference/#available-machine-images"
   working_directory:
     type: string
     default: "~/source"
@@ -152,16 +156,23 @@ working_directory: << parameters.working_directory >>
 
 resource_class: << parameters.resource_class >>
 
-docker:
-  - image: cimg/openjdk:8.0.275-node
+machine:
+  image: << parameters.machine_image >>
+  docker_layer_caching: true
 
 steps:
   - attach_workspace:
       at: .
-  - setup_remote_docker:
-      docker_layer_caching: true
+  - run:
+      name: Install nodeJS on machine executor
+      command: |
+        set +e
+        export NVM_DIR="/opt/circleci/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install v12
+        nvm alias default v12
   - integration-tests:
-      parent_executor: "docker"
+      parent_executor: "machine"
       working_directory: << parameters.working_directory >>
       primary_release_branch: << parameters.primary_release_branch >>
       nexus_username: << parameters.nexus_username >>
