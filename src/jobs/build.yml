@@ -17,6 +17,10 @@ parameters:
     type: string
     default: "cimg/openjdk:8.0.275"
     description: "Base docker image to be used for running the job"
+  disable_circleci_cache:
+    type: boolean
+    default: false
+    description: "Disable CircleCI cache and rely on existing caching coming from the docker image instead"
   module_id:
     type: string
     default: "module_id"
@@ -32,9 +36,13 @@ docker:
 steps:
   - attach_workspace:
       at: .
-  - restore_cache:
-      keys:
-        - v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
+  - when:
+      condition:
+        - equal: [ false, << pipeline.disable_circleci_cache >> ]
+      steps:
+        - restore_cache:
+            keys:
+              - v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
   - run:
       name: Build package and load all dependencies into local Maven repository
       command: mvn -s .circleci/.circleci.settings.xml clean install de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
@@ -44,10 +52,14 @@ steps:
   - run:
       name: Copy dependencies to provision artifacts
       command: mvn -s .circleci/.circleci.settings.xml dependency:copy-dependencies
-  - save_cache:
-      paths:
-        - ~/.m2
-      key: v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
+  - when:
+      condition:
+        - equal: [ false, << pipeline.disable_circleci_cache >> ]
+      steps:
+        - save_cache:
+            paths:
+              - ~/.m2
+            key: v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
   - run:
       name: Prepare artifacts
       command: |
