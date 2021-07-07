@@ -39,7 +39,7 @@ steps:
   - when:
       condition:
         and:
-          - equal: [ false, << pipeline.disable_circleci_cache >> ]
+          - equal: [ false, << parameters.disable_circleci_cache >> ]
       steps:
         - restore_cache:
             keys:
@@ -56,7 +56,7 @@ steps:
   - when:
       condition:
         and:
-          - equal: [ false, << pipeline.disable_circleci_cache >> ]
+          - equal: [ false, << parameters.disable_circleci_cache >> ]
       steps:
         - save_cache:
             paths:
