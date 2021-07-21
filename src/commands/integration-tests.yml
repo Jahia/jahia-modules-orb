@@ -92,6 +92,18 @@ parameters:
     type: boolean
     default: true
     description: "Should slack notifications be skipped ?"
+  slack_channel_id_notifications:
+    type: env_var_name
+    default: SLACK_CHANNEL_ID_QA_NOTIFICATIONS
+    description: "Channel id to be used for failure notifications"
+  slack_channel_id_notifications_all:
+    type: env_var_name
+    default: SLACK_CHANNEL_ID_QA_NOTIFICATIONS_ALL
+    description: "Channel id to be used for all notifications (failure and success)"
+  slack_client_token:
+    type: env_var_name
+    default: SLACK_CLIENT_TOKEN
+    description: "The slack token used to post the messages"
   slack_webhook_notifications:
     type: env_var_name
     default: SLACK_WEBHOOK_QA_NOTIFICATIONS
@@ -353,8 +365,9 @@ steps:
               nvm alias default v12
           fi
           jahia-reporter slack \
-            --webhook=${<< parameters.slack_webhook_notifications >>} \
-            --webhookAll=${<< parameters.slack_webhook_notifications_all >>} \
+            --channelId=${<< parameters.slack_channel_id_notifications >>} \
+            --channelAllId=${<< parameters.slack_channel_id_notifications_all >>} \
+            --token=${<< parameters.slack_client_token >>} \
             --skipSuccessful \
             --sourcePath="artifacts/results/reports" \
             --sourceType="json" \
