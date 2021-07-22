@@ -9,6 +9,10 @@ parameters:
     type: string
     default: "large"
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  docker_image:
+    type: string
+    default: "cimg/openjdk:8.0.275"
+    description: "Docker image to use for the run"
   working_directory:
     type: string
     default: "~/source"
@@ -23,7 +27,7 @@ working_directory: << parameters.working_directory >>
 resource_class: << parameters.resource_class >>
 
 docker:
-  - image: cimg/openjdk:8.0.275
+  - image: << parameters.docker_image >>
 
 steps:
   - attach_workspace:
