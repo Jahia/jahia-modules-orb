@@ -48,7 +48,7 @@ steps:
           yarn
         fi
   - save_cache:
-      key: v1-npm-{{ checksum "<< parameters.tests_path >>yarn.lock" }}
+      key: v1-npm-{{ checksum "yarn.lock" }}
       paths:
         - << parameters.module_path >>node_modules
         - << parameters.tests_path >>node_modules
