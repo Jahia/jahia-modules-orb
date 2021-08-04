@@ -46,10 +46,6 @@ docker:
 steps:
   - attach_workspace:
       at: .
-  - run:
-      name: Add eslint as a global package
-      command: |
-        sudo yarn global add eslint
   - lint:
       module_path: << parameters.module_path >>
       tests_path: << parameters.tests_path >>
