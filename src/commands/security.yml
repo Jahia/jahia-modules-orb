@@ -16,7 +16,7 @@ parameters:
     description: "Path to the integration tests"
   auditci_level:
     type: string
-    default: "moderate"
+    default: "high"
     description: "Security level to check against for the module codebase, will fail the step if higher"
   auditci_level_tests:
     type: string
