@@ -52,7 +52,7 @@ steps:
   # such as being used to provision a running Jahia with a set of freshly built artifacts
   - run:
       name: Copy dependencies to provision artifacts
-      command: mvn -s .circleci/.circleci.settings.xml dependency:copy-dependencies
+      command: mvn -ntp -s .circleci/.circleci.settings.xml dependency:copy-dependencies -DexcludeTransitive=true -DincludeScope=provided -DincludeGroupIds=org.jahia.modules -DincludeTypes=jar
   - when:
       condition:
         and:
