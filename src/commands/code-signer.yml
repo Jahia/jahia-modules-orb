@@ -1,0 +1,90 @@
+# Run Jahia installer code-signing process
+# https://www.ssl.com/guide/remote-ev-code-signing-with-esigner/#ftoc-heading-12
+description: >
+  Run Jahia installer code-signing process for each installer file
+  - Finds all jar/exe installer files with <file_pattern> that are descendants of <installer_dir>
+  - Original installer file is overwritten with the signed version
+  - Copy of unsigned file is retained and named <orig_file.(jar|exe)>.unsigned
+
+parameters:
+  installer_dir:
+    type: string
+    default: "~"
+    description: >
+      Any parent directory where installer file resides
+      # - must be specified as full path?
+  file_pattern:
+    type: string
+    default: "*"
+    description: >
+      File name pattern of installer file to sign
+      - orb already checks exe/jar extension (no need to include)
+
+  # context variables
+  # - code-signing-orb for prod values
+  # - code-signing-orb-sandbox for sandbox (used in dry run)
+  client_id:
+    type: env_var_name
+    default: CLIENT_ID
+    description: "Code signer Client ID"
+  client_secret:
+    type: env_var_name
+    default: CLIENT_SECRET
+    description: "Code signer Client Secret"
+  credential_id:
+    type: env_var_name
+    default: CREDENTIAL_ID
+    description: "Code signer Credential ID"
+  signer_username:
+    type: env_var_name
+    default: SIGNER_USERNAME
+    description: "Code signer username"
+  signer_password:
+    type: env_var_name
+    default: SIGNER_PASSWORD
+    description: "Code signer password"
+  totp_secret:
+    type: env_var_name
+    default: TOTP_SECRET
+    description: "Used to generate TOTP token"
+  access_token_url:
+    type: env_var_name
+    default: ACCESS_TOKEN_URL
+    description: "URL to generate code signing access token"
+  upload_signer_url:
+    type: env_var_name
+    default: UPLOAD_SIGNER_URL
+    description: "URL to upload installer for code signing"
+  download_signer_url:
+    type: env_var_name
+    default: DOWNLOAD_SIGNER_URL
+    description: "URL to download signed installer"
+
+
+steps:
+  - run:
+      name: Install oathtool
+      command: |
+        sudo -u root apt-get update && sudo -u root apt-get install oath-toolkit
+  - run:
+      name: Retrieve access token
+      command: |
+        echo "Retrieving code signer access token from ${<< parameters.access_token_url >>}..."
+        ACCESS_TOKEN=`curl -s --location --request POST "${<< parameters.access_token_url >>}" --header "Content-Type: application/json" --data-raw "{\"client_id\":\"${<< parameters.client_id >>}\",\"client_secret\":\"${<< parameters.client_secret >>}\",\"grant_type\":\"password\",\"username\":\"${<< parameters.signer_username >>}\",\"password\":\"${<< parameters.signer_password >>}\"}" | jq -r .access_token`
+  - run:
+      name: Generate signed installer files
+      command: |
+        AUTH_HEADER="Authorization: Bearer $ACCESS_TOKEN"
+        CRED_HEADER="Credential-Id: ${<< parameters.credential_id >>}"
+
+        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.exe" -or -name "*.jar" \)`; do
+          echo "Uploading installer file $INSTALLER_FILE to ${<< parameters.upload_signer_url >>}..."
+          [[ $INSTALLER_FILE == *.exe ]] && CONTENT_TYPE="application/exe" || CONTENT_TYPE="application/jar"
+          SIGNED_FILE_ID=`curl -s --location --request POST "${<< parameters.upload_signer_url >>}" --header "$CRED_HEADER" --header "$AUTH_HEADER" --header "Content-Type: $CONTENT_TYPE" --data-binary "@${INSTALLER_FILE}" | jq -r .id`
+
+          mv $INSTALLER_FILE ${INSTALLER_FILE}.unsigned
+
+          echo "Downloading signed installer file $INSTALLER_FILE from ${<< parameters.download_signer_url >>}..."
+          TOTP_TOKEN=`oathtool --totp -b -d 6 ${<< parameters.totp_secret >>}`
+          curl -s --location --request POST "${<< parameters.download_signer_url >>}" --output "${INSTALLER_FILE}" --header "$auth_header" --header "Content-Type: application/json" --header "Content-Transfer-Encoding: application/json" --data-raw "{\"id\": \"$SIGNED_FILE_ID\", \"otp\":\"$TOTP_TOKEN\"}"
+        done
