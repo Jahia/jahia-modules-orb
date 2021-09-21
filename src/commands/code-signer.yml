@@ -1,7 +1,8 @@
 # Run Jahia installer code-signing process
 # https://www.ssl.com/guide/remote-ev-code-signing-with-esigner/#ftoc-heading-12
 description: >
-  Run Jahia installer code-signing process
+  Run Jahia installer code-signing process for each installer file
+  - Finds all jar/exe installer files with <file_pattern> that are descendants of <installer_dir>
   - Original installer file is overwritten with the signed version
   - Copy of unsigned file is retained and named <orig_file.(jar|exe)>.unsigned
 
@@ -14,10 +15,10 @@ parameters:
       # - must be specified as full path?
   file_pattern:
     type: string
-    default: ""
+    default: "*"
     description: >
       File name pattern of installer file to sign
-      - command orb already checks exe/jar extension (no need to include)
+      - orb already checks exe/jar extension (no need to include)
       
 context:
   # context variables
