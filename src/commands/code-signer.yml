@@ -1,0 +1,68 @@
+# Run Jahia installer code-signing process
+# https://www.ssl.com/guide/remote-ev-code-signing-with-esigner/#ftoc-heading-12
+description: >
+  Run Jahia installer code-signing process
+  - Original installer file is overwritten with the signed version
+  - Copy of unsigned file is retained and named <orig_file.(jar|exe)>.unsigned
+
+parameters:
+  installer_dir:
+    type: string
+    default: "~"
+    description: >
+      Any parent directory where installer file resides
+      # - must be specified as full path?
+  file_pattern:
+    type: string
+    default: ""
+    description: >
+      File name pattern of installer file to sign
+      - command orb already checks exe/jar extension (no need to include)
+      
+context:
+  # context variables
+  #   * CLIENT_ID
+  #   * CLIENT_SECRET
+  #   * CREDENTIAL_ID
+  #   * SIGNER_USERNAME
+  #   * SIGNER_PASSWORD
+  #   * TOTP_SECRET
+  - code-signing-orb
+
+environment:
+  ACCESS_TOKEN_URL: "https://oauth-sandbox.ssl.com/oauth2/token"
+  UPLOAD_SIGNER_URL: "https://cds-try.ssl.com/v1/code/upload"
+  DOWNLOAD_SIGNER_URL: "https://cds-try.ssl.com/v1/code/sign"
+  # prod env
+  # ACCESS_TOKEN_URL: "https://login.ssl.com/oauth2/token"
+  # UPLOAD_SIGNER_URL: "https://cds.ssl.com/v1/code/upload"
+  # DOWNLOAD_SIGNER_URL: "https://cds.ssl.com/v1/code/sign"
+
+steps:
+  - run:
+      name: Install oathtool
+      command: |
+        sudo -u root apt-get update && sudo -u root apt-get install oath-toolkit
+  - run:
+      name: Retrieve access token
+      command: |
+        echo "Retrieving code signer access token..."
+        ACCESS_TOKEN=`curl -s --location --request POST "${ACCESS_TOKEN_URL}" --header "Content-Type: application/json" --data-raw "{\"client_id\":\"$CLIENT_ID\",\"client_secret\":\"$CLIENT_SECRET\",\"grant_type\":\"password\",\"username\":\"$SIGNER_USERNAME\",\"password\":\"$SIGNER_PASSWORD\"}" | jq -r .access_token`
+  - run:
+      name: Generate signed installer files
+      command: |
+        AUTH_HEADER="Authorization: Bearer $ACCESS_TOKEN"
+        CRED_HEADER="Credential-Id: $CREDENTIAL_ID"
+
+        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.exe" -or -name "*.jar" \)`; do
+
+          echo "Uploading installer file $INSTALLER_FILE..."
+          [[ $INSTALLER_FILE == *.exe ]] && CONTENT_TYPE="application/exe" || CONTENT_TYPE="application/jar"
+          SIGNED_FILE_ID=`curl -s --location --request POST "${UPLOAD_SIGNER_URL}" --header "$CRED_HEADER" --header "$AUTH_HEADER" --header "Content-Type: $CONTENT_TYPE" --data-binary "@${INSTALLER_FILE}" | jq -r .id`
+
+          mv $INSTALLER_FILE ${INSTALLER_FILE}.unsigned
+
+          echo "Downloading signed installer file $INSTALLER_FILE..."
+          TOTP_TOKEN=`oathtool --totp -b -d 6 $TOTP_SECRET`
+          curl -s --location --request POST "${DOWNLOAD_SIGNER_URL}" --output "${INSTALLER_FILE}" --header "$AUTH_HEADER" --header "Content-Type: application/json" --header "Content-Transfer-Encoding: application/json" --data-raw "{\"id\": \"$SIGNED_FILE_ID\", \"otp\":\"$TOTP_TOKEN\"}"
+        done
