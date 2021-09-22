@@ -65,15 +65,13 @@ steps:
   - run:
       name: Install oathtool
       command: |
-        sudo -u root apt-get update && sudo -u root apt-get install oath-toolkit
-  - run:
-      name: Retrieve access token
-      command: |
-        echo "Retrieving code signer access token from ${<< parameters.access_token_url >>}..."
-        ACCESS_TOKEN=`curl -s --location --request POST "${<< parameters.access_token_url >>}" --header "Content-Type: application/json" --data-raw "{\"client_id\":\"${<< parameters.client_id >>}\",\"client_secret\":\"${<< parameters.client_secret >>}\",\"grant_type\":\"password\",\"username\":\"${<< parameters.signer_username >>}\",\"password\":\"${<< parameters.signer_password >>}\"}" | jq -r .access_token`
+        sudo -u root apt-get update && sudo -u root apt-get install -y oathtool
   - run:
       name: Generate signed installer files
       command: |
+        echo "Retrieving code signer access token from ${<< parameters.access_token_url >>}..."
+        ACCESS_TOKEN=`curl -s --location --request POST "${<< parameters.access_token_url >>}" --header "Content-Type: application/json" --data-raw "{\"client_id\":\"${<< parameters.client_id >>}\",\"client_secret\":\"${<< parameters.client_secret >>}\",\"grant_type\":\"password\",\"username\":\"${<< parameters.signer_username >>}\",\"password\":\"${<< parameters.signer_password >>}\"}" | jq -r .access_token`
+
         AUTH_HEADER="Authorization: Bearer $ACCESS_TOKEN"
         CRED_HEADER="Credential-Id: ${<< parameters.credential_id >>}"
 
