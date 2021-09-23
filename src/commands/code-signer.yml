@@ -53,10 +53,16 @@ steps:
   - run:
       name: Generate signed installer files
       command: |
-        mkdir /tmp/unsigned-artifacts
-        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.exe" -or -name "*.jar" \)`; do
-          cp $INSTALLER_FILE /tmp/unsigned-artifacts
-        done
         cd CodeSignTool-v1.2.0
-        printf `oathtool --totp -b -d 6 $TOTP_SECRET` | ./CodeSignTool.sh batch_sign -input_dir_path=/tmp/unsigned-artifacts -password=${<< parameters.signer_password >>} -output_dir_path=/tmp/artifacts -username=${<< parameters.signer_username >>} -credential_id=${<< parameters.credential_id >>}
-        rm -rf /tmp/unsigned-artifacts
+        OUTPUT_DIR=/tmp/signed-installers
+        mkdir $OUTPUT_DIR
+        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.exe" -or -name "*.jar" \)`; do
+          echo "Signing $INSTALLER_FILE..."
+          printf `oathtool --totp -b -d 6 ${<< parameters.totp_secret >>}` | ./CodeSignTool.sh sign \
+            -input_file_path=$INSTALLER_FILE \
+            -output_dir_path=$OUTPUT_DIR \
+            -username=${<< parameters.signer_username >>} \
+            -password=${<< parameters.signer_password >>} \
+            -credential_id=${<< parameters.credential_id >>}
+          cp $output_dir/`basename $INSTALLER_FILE` $INSTALLER_FILE # overwrite original file
+        done
