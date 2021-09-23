@@ -64,5 +64,5 @@ steps:
             -username=${<< parameters.signer_username >>} \
             -password=${<< parameters.signer_password >>} \
             -credential_id=${<< parameters.credential_id >>}
-          cp $output_dir/`basename $INSTALLER_FILE` $INSTALLER_FILE # overwrite original file
+          cp $OUTPUT_DIR/`basename $INSTALLER_FILE` $INSTALLER_FILE # overwrite original file
         done
