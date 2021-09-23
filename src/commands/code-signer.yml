@@ -58,5 +58,5 @@ steps:
           cp $INSTALLER_FILE /tmp/unsigned-artifacts
         done
         cd CodeSignTool-v1.2.0
-        printf `oathtool --totp -b -d 6 $TOTP_SECRET` | ./CodeSignTool.sh batch_sign -input_dir_path=/tmp/unsigned-artifacts -password=$SIGNER_PASSWORD -output_dir_path=/tmp/artifacts -username=$SIGNER_USERNAME -credential_id=$CREDENTIAL_ID
+        printf `oathtool --totp -b -d 6 $TOTP_SECRET` | ./CodeSignTool.sh batch_sign -input_dir_path=/tmp/unsigned-artifacts -password=${<< parameters.signer_password >>} -output_dir_path=/tmp/artifacts -username=${<< parameters.signer_username >>} -credential_id=${<< parameters.credential_id >>}
         rm -rf /tmp/unsigned-artifacts
