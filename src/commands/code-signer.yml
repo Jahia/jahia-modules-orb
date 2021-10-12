@@ -44,25 +44,51 @@ steps:
   - run:
       name: Initialize code sign tools
       command: |
+        # Download CodeSignTool
         sudo -u root apt-get update && sudo -u root apt-get install -y oathtool
         tool_url=https://www.ssl.com/download/29764/
         curl -s $tool_url --output CodeSignTool.zip
-        unzip CodeSignTool.zip
+        unzip CodeSignTool.zip # unzips CodeSignTool-v1.2.0 dir
+
+        # Download sign4j binary (to sign exes) and custom codesigntool script
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        git clone --depth 1 --branch master git@github.com:Jahia/JahiaReleaseTool.git
+        cp JahiaReleaseTool/bin/sign4j CodeSignTool-v1.2.0
+        cp JahiaReleaseTool/codeSignTool-sign4j.sh CodeSignTool-v1.2.0
+
+        # Clean-up
+        rm -rf JahiaReleaseTool
         rm -rf CodeSignTool.zip
 
   - run:
       name: Generate signed installer files
       command: |
         cd CodeSignTool-v1.2.0
-        OUTPUT_DIR=/tmp/signed-installers
+        export OUTPUT_DIR=/tmp/signed-installers
+        export TOTP_SECRET=${<< parameters.totp_secret >>}
         mkdir $OUTPUT_DIR
-        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.exe" -or -name "*.jar" \)`; do
+
+        # sign installer jars
+        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.jar" \)`; do
           echo "Signing $INSTALLER_FILE..."
           printf `oathtool --totp -b -d 6 ${<< parameters.totp_secret >>}` | ./CodeSignTool.sh sign \
-            -input_file_path=$INSTALLER_FILE \
-            -output_dir_path=$OUTPUT_DIR \
             -username=${<< parameters.signer_username >>} \
             -password=${<< parameters.signer_password >>} \
-            -credential_id=${<< parameters.credential_id >>}
+            -credential_id=${<< parameters.credential_id >>} \
+            -output_dir_path=$OUTPUT_DIR \
+            -input_file_path=$INSTALLER_FILE
+          cp $OUTPUT_DIR/`basename $INSTALLER_FILE` $INSTALLER_FILE # overwrite original file
+        done
+
+        # sign installer exes
+        for INSTALLER_FILE in `find << parameters.installer_dir >> -name "<< parameters.file_pattern >>" \( -name "*.exe" \)`; do
+          echo "Signing $INSTALLER_FILE..."
+          ./sign4j ./codeSignTool-sign4j.sh sign \
+            -username=${<< parameters.signer_username >>} \
+            -password=${<< parameters.signer_password >>} \
+            -credential_id=${<< parameters.credential_id >>} \
+            -output_dir_path=$OUTPUT_DIR \
+            $INSTALLER_FILE # -input_file_path option is replaced by last param
           cp $OUTPUT_DIR/`basename $INSTALLER_FILE` $INSTALLER_FILE # overwrite original file
         done
