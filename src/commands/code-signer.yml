@@ -53,6 +53,8 @@ steps:
         # Download sign4j binary (to sign exes) and custom codesigntool script
         mkdir -p ~/.ssh
         ssh-keyscan github.com >> ~/.ssh/known_hosts
+        git config --global user.email "jahia-ci@jahia.com"
+        git config --global user.name "Jahia CI"
         git clone --depth 1 --branch master git@github.com:Jahia/JahiaReleaseTool.git
         cp JahiaReleaseTool/bin/sign4j CodeSignTool-v1.2.0
         cp JahiaReleaseTool/codeSignTool-sign4j.sh CodeSignTool-v1.2.0
