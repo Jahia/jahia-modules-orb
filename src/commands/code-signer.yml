@@ -7,6 +7,9 @@ description: >
   - Signed artifacts are added in /tmp/artifacts folder
 
 parameters:
+  ssh_key_fingerprint:
+    type: string
+    description: "Used for fetching external repos"
   installer_dir:
     type: string
     default: "~"
@@ -41,6 +44,16 @@ parameters:
 
 
 steps:
+  - add_ssh_keys:
+      fingerprints:
+        - << parameters.ssh_key_fingerprint >>
+  - run:
+      name: Setting up github configuration
+      command: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        git config --global user.email "jahia-ci@jahia.com"
+        git config --global user.name "Jahia CI"
   - run:
       name: Initialize code sign tools
       command: |
@@ -51,10 +64,6 @@ steps:
         unzip CodeSignTool.zip # unzips CodeSignTool-v1.2.0 dir
 
         # Download sign4j binary (to sign exes) and custom codesigntool script
-        mkdir -p ~/.ssh
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        git config --global user.email "jahia-ci@jahia.com"
-        git config --global user.name "Jahia CI"
         git clone --depth 1 --branch master git@github.com:Jahia/JahiaReleaseTool.git
         cp JahiaReleaseTool/bin/sign4j CodeSignTool-v1.2.0
         cp JahiaReleaseTool/codeSignTool-sign4j.sh CodeSignTool-v1.2.0
