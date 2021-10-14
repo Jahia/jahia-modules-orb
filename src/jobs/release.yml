@@ -78,7 +78,7 @@ steps:
   - run:
       name: Release prepare version for << parameters.release_version >>
       command: |
-        FINAL_RELEASE_VERSION=$(echo << parameters.release_version >> | cut -d'-' -f 1)
+        FINAL_RELEASE_VERSION=$(echo << parameters.release_version >> | tr '_' '.' | cut -d'-' -f 1)
         MAJOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f1`
         MINOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f2`
         REVISION=`echo $FINAL_RELEASE_VERSION | cut -d. -f3`
