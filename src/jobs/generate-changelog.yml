@@ -31,7 +31,7 @@ working_directory: << parameters.working_directory >>
 resource_class: << parameters.resource_class >>
 
 docker:
-  - image: cimg/node:14.15
+  - image: cimg/node:lts
 
 steps:
   - checkout
