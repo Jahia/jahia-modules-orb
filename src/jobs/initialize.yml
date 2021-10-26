@@ -8,7 +8,7 @@ parameters:
     description: "Working directory for the job"
   base_image:
     type: string
-    default: "cimg/openjdk:8.0.292-node"
+    default: "cimg/openjdk:8.0.302-node"
     description: "Base docker image to be used for running the job"
   resource_class:
     type: string
