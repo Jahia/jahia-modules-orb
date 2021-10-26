@@ -9,7 +9,7 @@ parameters:
   base_image:
     type: string
     default: "cimg/node:lts"
-    description: "Base docker image to be used for running the job"    
+    description: "Base docker image to be used for running the job"
   working_directory:
     type: string
     default: "~/source"
