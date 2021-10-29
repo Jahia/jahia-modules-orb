@@ -41,7 +41,8 @@ steps:
   - run:
       name: Retrieve staging repository ID and promote staging repository to release on Nexus
       command: |
+        finalReleaseVersion=$(echo << parameters.release_version >> | tr '_' '.')
         curl -u ${<< parameters.nexus_username >>}:${<< parameters.nexus_password >>} -H "Accept: application/json" https://devtools.jahia.com/nexus/service/local/staging/profile_repositories > staging-repos.json
-        stagingRepositoryId=$(cat staging-repos.json | jq '.data[] | select(.description|test("<< parameters.module_id >>:<< parameters.release_version >>")) | .repositoryId')
+        stagingRepositoryId=$(cat staging-repos.json | jq '.data[] | select(.description|test("<< parameters.module_id >>:${finalReleaseVersion}")) | .repositoryId')
         echo "Staging repository being promoted: ${stagingRepositoryId}"
         curl -u ${<< parameters.nexus_username >>}:${<< parameters.nexus_password >>} -H "Accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"autoDropAfterRelease\":true, \"stagedRepositoryIds\":[${stagingRepositoryId}]}}" https://devtools.jahia.com/nexus/service/local/staging/bulk/promote
