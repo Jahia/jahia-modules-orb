@@ -124,6 +124,26 @@ parameters:
     type: env_var_name
     default: ZENCREPES_WEBHOOK_SECRET
     description: "ZenCrepes Webhook secret"
+  incident_pagerduty_api_key:
+    type: env_var_name
+    default: INCIDENT_PAGERDUTY_API_KEY
+    description: "Pageduty API key to create incidents"
+  incident_pagerduty_reporter_email:
+    type: env_var_name
+    default: INCIDENT_PAGERDUTY_REPORTER_EMAIL
+    description: "Pageduty Reporter email to create incident. That email must correspond to a valid user in the PagerDuty tenant"
+  incident_google_spreadsheet_id:
+    type: env_var_name
+    default: INCIDENT_GOOGLE_SPREADSHEET_ID
+    description: "Google Spreadsheet ID of the spreadsheet containing the incident mapping"
+  incident_google_client_email:
+    type: env_var_name
+    default: INCIDENT_GOOGLE_CLIENT_EMAIL
+    description: "Google Client email to allow access to Google API"
+  incident_google_api_key_base64:
+    type: env_var_name
+    default: INCIDENT_GOOGLE_PRIVATE_KEY_BASE64
+    description: "Google base64 encoded private key to allow access to Google API"
   testrail_project:
     type: string
     default: "Default"
@@ -323,10 +343,11 @@ steps:
       when: always
       command: |
         if [ "<< parameters.parent_executor >>" == "machine" ]; then
-            echo "Running in a machin executor"
+            echo "Running in a machine executor"
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm alias default v12
+            nvm install --lts
+            nvm use --lts
             npm install -g jahia-reporter
         else
           sudo npm install -g jahia-reporter
@@ -338,10 +359,10 @@ steps:
         if [ << parameters.should_skip_testrail >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           if [ "<< parameters.parent_executor >>" == "machine" ]; then
-              echo "Running in a machin executor"
+              echo "Running in a machine executor"
               export NVM_DIR="/opt/circleci/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm alias default v12
+              nvm use --lts
           fi
           jahia-reporter testrail \
             --testrailUsername=${<< parameters.testrail_username >>} \
@@ -352,6 +373,30 @@ steps:
             --milestone="<< parameters.testrail_milestone >>" \
             --defaultRunDescription="This test was executed on circleci, $CIRCLE_BUILD_URL"
         fi
+  # See https://theoephraim.github.io/node-google-spreadsheet/#/getting-started/authentication for Google Auth setup
+  - run:
+      name: Create incident in PagerDuty
+      when: on_fail
+      command: |
+        if [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
+          cd << parameters.tests_path >>
+          if [ "<< parameters.parent_executor >>" == "machine" ]; then
+              echo "Running in a machine executor"
+              export NVM_DIR="/opt/circleci/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              nvm use --lts
+          fi
+          jahia-reporter pagerduty:incident \
+            --sourcePath="artifacts/results/reports" \
+            --sourceType="json" \
+            --pdApiKey=${<< parameters.incident_pagerduty_api_key >>} \
+            --pdReporterEmail=${<< parameters.incident_pagerduty_reporter_email >>} \
+            --googleSpreadsheetId=${<< parameters.incident_google_spreadsheet_id >>} \
+            --googleClientEmail=${<< parameters.incident_google_client_email >>} \
+            --googleApiKey=${<< parameters.incident_google_api_key_base64 >>} \
+            --service=${<< parameters.module_id >>} \
+            --sourceUrl=$CIRCLE_BUILD_URL
+        fi
   - run:
       name: Send Notifications to Slack
       when: always
@@ -359,10 +404,10 @@ steps:
         if [ << parameters.should_skip_notifications >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           if [ "<< parameters.parent_executor >>" == "machine" ]; then
-              echo "Running in a machin executor"
+              echo "Running in a machine executor"
               export NVM_DIR="/opt/circleci/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm alias default v12
+              nvm use --lts
           fi
           jahia-reporter slack \
             --channelId=${<< parameters.slack_channel_id_notifications >>} \
@@ -382,10 +427,10 @@ steps:
         if [ << parameters.should_skip_zencrepes >> == false ] || [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           if [ "<< parameters.parent_executor >>" == "machine" ]; then
-              echo "Running in a machin executor"
+              echo "Running in a machine executor"
               export NVM_DIR="/opt/circleci/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm alias default v12
+              nvm use --lts
           fi
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
