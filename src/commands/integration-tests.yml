@@ -348,9 +348,9 @@ steps:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install --lts
             nvm use --lts
-            npm install -g jahia-reporter
+            npm install -g @jahia/jahia-reporter
         else
-          sudo npm install -g jahia-reporter
+          sudo npm install -g @jahia/jahia-reporter
         fi
   - run:
       name: Publish results to testrail
