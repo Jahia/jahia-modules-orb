@@ -394,7 +394,7 @@ steps:
             --googleSpreadsheetId=${<< parameters.incident_google_spreadsheet_id >>} \
             --googleClientEmail=${<< parameters.incident_google_client_email >>} \
             --googleApiKey=${<< parameters.incident_google_api_key_base64 >>} \
-            --service=${<< parameters.module_id >>} \
+            --service=<< parameters.module_id >> \
             --sourceUrl=$CIRCLE_BUILD_URL
         fi
   - run:
