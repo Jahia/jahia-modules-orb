@@ -15,7 +15,7 @@ parameters:
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
   machine_image:
     type: string
-    default: "ubuntu-2004:202104-01"
+    default: "ubuntu-2004:202107-02"
     description: "Ubuntu image to run on the machine as per https://circleci.com/docs/2.0/configuration-reference/#available-machine-images"
   working_directory:
     type: string
