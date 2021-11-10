@@ -163,6 +163,7 @@ steps:
   - attach_workspace:
       at: .
   - setup_remote_docker:
+      version: 20.10.7
       docker_layer_caching: true
   - integration-tests:
       parent_executor: "docker"
