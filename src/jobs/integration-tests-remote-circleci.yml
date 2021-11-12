@@ -34,7 +34,7 @@ parameters:
     type: env_var_name
     default: CIRCLECI_PIPELINE_LAUNCH_TOKEN
     description: "CircleCI API token for the pipeline to be triggered"
-    
+
 working_directory: << parameters.working_directory >>
 
 resource_class: << parameters.resource_class >>
