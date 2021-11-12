@@ -1,0 +1,54 @@
+description: >
+  Trigger the execution of the integration tests in another CircleCI repository.
+  This run will be async and will not report execution state back to the source.
+  Note that this job requires the remote repository configuration to contain a workflow triggered only
+  when a variable `IS_MANUAL_TESTRUN` is set to true.
+parameters:
+  resource_class:
+    type: string
+    default: "small"
+    description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
+  base_image:
+    type: string
+    default: "cimg/openjdk:8.0.302-node"
+    description: "Base docker image to be used for running the job"
+  working_directory:
+    type: string
+    default: "~/source"
+    description: "Working directory for the job"
+  primary_release_branch:
+    type: string
+    default: "main"
+    description: "Primary release branch"
+  github_org:
+    type: string
+    default: "Jahia"
+    description: "Github organization (for example: Jahia)"
+  github_repo:
+    type: string
+    description: "Github repository (for example: augmented-search)"
+  github_branch:
+    type: string
+    description: "Branch, in the GitHub repository, to run the pipeline"
+  circleci_pipeline_launch_token:
+    type: env_var_name
+    default: CIRCLECI_PIPELINE_LAUNCH_TOKEN
+    description: "CircleCI API token for the pipeline to be triggered"
+    
+working_directory: << parameters.working_directory >>
+
+resource_class: << parameters.resource_class >>
+
+docker:
+  - image: << parameters.base_image >>
+
+steps:
+  - attach_workspace:
+      at: .
+  - run:
+      name: Trigger API call
+      command: |
+        curl -X POST --url 'https://circleci.com/api/v2/project/gh/<< parameters.github_org >>/<< parameters.github_repo >>/pipeline' \
+          --header 'circle-token:'"$<< parameters.circleci_pipeline_launch_token >>"'' \
+          --header 'content-type:application/json' \
+          --data '{ "branch":"'"<< parameters.github_branch >>"'", "parameters":{"IS_MANUAL_TESTRUN":true}}'
