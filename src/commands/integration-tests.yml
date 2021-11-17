@@ -132,6 +132,10 @@ parameters:
     type: env_var_name
     default: INCIDENT_PAGERDUTY_REPORTER_EMAIL
     description: "Pageduty Reporter email to create incident. That email must correspond to a valid user in the PagerDuty tenant"
+  incident_pagerduty_reporter_id:
+    type: env_var_name
+    default: INCIDENT_PAGERDUTY_REPORTER_ID
+    description: "Pageduty Reporter id to create incident. This user will first be assigned to the ticket when --pdTwoStepsAssign is provided"
   incident_google_spreadsheet_id:
     type: env_var_name
     default: INCIDENT_GOOGLE_SPREADSHEET_ID
@@ -378,7 +382,7 @@ steps:
       name: Create incident in PagerDuty
       when: on_fail
       command: |
-        if [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ]; then
+        if [ << parameters.primary_release_branch >> == $CIRCLE_BRANCH ] || [ master == $CIRCLE_BRANCH ]; then
           cd << parameters.tests_path >>
           if [ "<< parameters.parent_executor >>" == "machine" ]; then
               echo "Running in a machine executor"
@@ -391,6 +395,8 @@ steps:
             --sourceType="json" \
             --pdApiKey=${<< parameters.incident_pagerduty_api_key >>} \
             --pdReporterEmail=${<< parameters.incident_pagerduty_reporter_email >>} \
+            --pdReporterId=${<< parameters.incident_pagerduty_reporter_id >>} \
+            --pdTwoStepsAssign \
             --googleSpreadsheetId=${<< parameters.incident_google_spreadsheet_id >>} \
             --googleClientEmail=${<< parameters.incident_google_client_email >>} \
             --googleApiKey=${<< parameters.incident_google_api_key_base64 >>} \
