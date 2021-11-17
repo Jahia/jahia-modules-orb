@@ -356,6 +356,7 @@ steps:
         else
           sudo npm install -g @jahia/jahia-reporter
         fi
+        jahia-reporter -v
   - run:
       name: Publish results to testrail
       when: always
