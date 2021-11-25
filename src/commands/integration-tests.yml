@@ -334,12 +334,6 @@ steps:
 
   - store_test_results:
       path: << parameters.tests_path >>artifacts/results/xml_reports
-  - run:
-      name: remove xml results folder
-      when: always
-      command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
-  - store_artifacts:
-      path: << parameters.tests_path >>artifacts/results
   # Once all is executed, results are submitted to external platforms
   # Testrail report and Slack (failure only) notifications are sent during scheduled executions or merged into the main branch
   - run:
@@ -372,8 +366,8 @@ steps:
           jahia-reporter testrail \
             --testrailUsername=${<< parameters.testrail_username >>} \
             --testrailPassword=${<< parameters.testrail_password >>} \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="<< parameters.tests_path >>artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --projectName="<< parameters.testrail_project >>" \
             --milestone="<< parameters.testrail_milestone >>" \
             --defaultRunDescription="This test was executed on circleci, $CIRCLE_BUILD_URL"
@@ -392,8 +386,8 @@ steps:
               nvm use --lts
           fi
           jahia-reporter pagerduty:incident \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="<< parameters.tests_path >>artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --pdApiKey=${<< parameters.incident_pagerduty_api_key >>} \
             --pdReporterEmail=${<< parameters.incident_pagerduty_reporter_email >>} \
             --pdReporterId=${<< parameters.incident_pagerduty_reporter_id >>} \
@@ -442,9 +436,16 @@ steps:
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
             --webhookSecret=${<< parameters.zencrepes_secret >>} \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="<< parameters.tests_path >>artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --name="<< parameters.module_id >>" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
+  - run:
+      name: remove xml results folder
+      when: always
+      command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
+  - store_artifacts:
+      path: << parameters.tests_path >>artifacts/results
+      
