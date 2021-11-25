@@ -448,4 +448,3 @@ steps:
       command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
   - store_artifacts:
       path: << parameters.tests_path >>artifacts/results
-      
