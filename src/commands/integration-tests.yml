@@ -366,7 +366,7 @@ steps:
           jahia-reporter testrail \
             --testrailUsername=${<< parameters.testrail_username >>} \
             --testrailPassword=${<< parameters.testrail_password >>} \
-            --sourcePath="<< parameters.tests_path >>artifacts/results/xml_reports" \
+            --sourcePath="artifacts/results/xml_reports" \
             --sourceType="xml" \
             --projectName="<< parameters.testrail_project >>" \
             --milestone="<< parameters.testrail_milestone >>" \
@@ -386,7 +386,7 @@ steps:
               nvm use --lts
           fi
           jahia-reporter pagerduty:incident \
-            --sourcePath="<< parameters.tests_path >>artifacts/results/xml_reports" \
+            --sourcePath="artifacts/results/xml_reports" \
             --sourceType="xml" \
             --pdApiKey=${<< parameters.incident_pagerduty_api_key >>} \
             --pdReporterEmail=${<< parameters.incident_pagerduty_reporter_email >>} \
@@ -415,8 +415,8 @@ steps:
             --channelAllId=${<< parameters.slack_channel_id_notifications_all >>} \
             --token=${<< parameters.slack_client_token >>} \
             --skipSuccessful \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --msgAuthor="CircleCI ($CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME)" \
             --runUrl=$CIRCLE_BUILD_URL
@@ -436,7 +436,7 @@ steps:
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
             --webhookSecret=${<< parameters.zencrepes_secret >>} \
-            --sourcePath="<< parameters.tests_path >>artifacts/results/xml_reports" \
+            --sourcePath="artifacts/results/xml_reports" \
             --sourceType="xml" \
             --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --name="<< parameters.module_id >>" \
