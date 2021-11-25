@@ -442,9 +442,9 @@ steps:
             --name="<< parameters.module_id >>" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
-  - run:
-      name: remove xml results folder
-      when: always
-      command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
+#   - run:
+#       name: remove xml results folder
+#       when: always
+#       command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
   - store_artifacts:
       path: << parameters.tests_path >>artifacts/results
