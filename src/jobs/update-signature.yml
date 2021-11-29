@@ -1,3 +1,4 @@
+# TODO BACKLOG-16625 use the command for updating the module signature
 description: >
   Update Jahia module signature in the pom.xml file
 
