@@ -90,6 +90,9 @@ steps:
   - store_test_results:
       path: /tmp/artifacts/test-results/
   - run:
+      name: Display size of the artifacts (for space optimization)
+      command: du -h -d 0 /tmp/artifacts/
+  - run:
       name: Display size of the workspace after running job (for space optimization)
       command: du -h -d 1 << parameters.working_directory >>
   - persist_to_workspace:
