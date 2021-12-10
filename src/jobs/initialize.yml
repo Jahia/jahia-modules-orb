@@ -34,6 +34,9 @@ steps:
   - checkout
   - generate-cachekey-seed:
       working_directory: << parameters.working_directory >>
+  - run:
+      name: Display size of the workspace before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - restore_cache:
       keys:
         - v1-npm-{{ checksum "yarn.lock" }}
@@ -56,6 +59,9 @@ steps:
       paths:
         - << parameters.module_path >>node_modules
         - << parameters.tests_path >>node_modules
+  - run:
+      name: Display size of the workspace after running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - persist_to_workspace:
       root: << parameters.working_directory >>
       paths:
