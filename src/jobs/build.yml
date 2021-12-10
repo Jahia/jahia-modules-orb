@@ -95,4 +95,4 @@ steps:
   - persist_to_workspace:
       root: << parameters.working_directory >>
       paths:
-        - target/*.jar
+        - target/*
