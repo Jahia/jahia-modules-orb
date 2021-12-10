@@ -45,6 +45,9 @@ steps:
       fingerprints:
         - << parameters.ssh_key_fingerprints >>
   - run:
+      name: Display size of the workspace before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
+  - run:
       name: Setting up github configuration
       command: |
         mkdir -p ~/.ssh
@@ -63,6 +66,9 @@ steps:
         yarn add auto
         GH_TOKEN=${<< parameters.github_api_token >>} yarn auto changelog
         git push --set-upstream origin $CIRCLE_BRANCH
+  - run:
+      name: Display size of the workspace after running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - persist_to_workspace:
       root: << parameters.working_directory >>
       paths:
