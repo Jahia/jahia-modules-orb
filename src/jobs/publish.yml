@@ -28,7 +28,7 @@ steps:
   - attach_workspace:
       at: .
   - run:
-      name: Display size of the workspace before running job (for space optimization)
+      name: Display size of the workspace folders before running job (for space optimization)
       command: du -h -d 1 << parameters.working_directory >>
   - restore_cache:
       keys:
@@ -37,5 +37,5 @@ steps:
       name: Deploy artifacts to server repository
       command: mvn -s .circleci/.circleci.settings.xml clean deploy
   - run:
-      name: Display size of the workspace after running job (for space optimization)
+      name: Display size of the workspace folders after running job (for space optimization)
       command: du -h -d 1 << parameters.working_directory >>
