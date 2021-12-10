@@ -32,6 +32,9 @@ docker:
 steps:
   - attach_workspace:
       at: .
+  - run:
+      name: Display size of the workspace before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - setup_remote_docker:
       docker_layer_caching: true
   - run:
@@ -50,3 +53,6 @@ steps:
         echo "Tagged the image"
         docker push << parameters.tests_image_name >>:$IMAGE_TAG
         echo "Pushed tag"
+  - run:
+      name: Display size of the workspace after running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
