@@ -448,6 +448,7 @@ steps:
       command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
   - run:
       name: Display size of the artifacts (for space optimization)
+      when: always
       command: du -h -d 0 << parameters.tests_path >>artifacts/results
   - store_artifacts:
       path: << parameters.tests_path >>artifacts/results
