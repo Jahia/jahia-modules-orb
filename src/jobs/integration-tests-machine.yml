@@ -164,7 +164,7 @@ steps:
   - attach_workspace:
       at: .
   - run:
-      name: Display size of the workspace before running job (for space optimization)
+      name: Display size of the workspace folders before running job (for space optimization)
       command: du -h -d 1 << parameters.working_directory >>
   - run:
       name: Install nodeJS on machine executor
@@ -211,5 +211,5 @@ steps:
       ci_postrun_script: << parameters.ci_postrun_script >>
       no_output_timeout: << parameters.no_output_timeout >>
   - run:
-      name: Display size of the workspace after running job (for space optimization)
+      name: Display size of the workspace after folders running job (for space optimization)
       command: du -h -d 1 << parameters.working_directory >>
