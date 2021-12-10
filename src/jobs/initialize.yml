@@ -35,32 +35,7 @@ steps:
   - generate-cachekey-seed:
       working_directory: << parameters.working_directory >>
   - run:
-      name: Display size of the workspace before running job (for space optimization)
-      command: du -h -d 1 << parameters.working_directory >>
-  - restore_cache:
-      keys:
-        - v1-npm-{{ checksum "yarn.lock" }}
-  - run:
-      name: Run yarn if package.json exists in module folder
-      command: |
-        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>package.json" ]]; then
-          cd << parameters.module_path >>
-          yarn
-        fi
-  - run:
-      name: Run yarn if packages.json exists in test folder
-      command: |
-        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
-          cd << parameters.tests_path >>
-          yarn
-        fi
-  - save_cache:
-      key: v1-npm-{{ checksum "yarn.lock" }}
-      paths:
-        - << parameters.module_path >>node_modules
-        - << parameters.tests_path >>node_modules
-  - run:
-      name: Display size of the workspace after running job (for space optimization)
+      name: Display size of the workspace before persisting it (for space optimization)
       command: du -h -d 1 << parameters.working_directory >>
   - persist_to_workspace:
       root: << parameters.working_directory >>
