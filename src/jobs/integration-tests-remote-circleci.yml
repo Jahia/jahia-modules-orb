@@ -46,6 +46,9 @@ steps:
   - attach_workspace:
       at: .
   - run:
+      name: Display size of the workspace folders before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
+  - run:
       name: Trigger API call
       command: |
         curl -X POST --url 'https://circleci.com/api/v2/project/gh/<< parameters.github_org >>/<< parameters.github_repo >>/pipeline' \

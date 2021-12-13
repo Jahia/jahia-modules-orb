@@ -33,6 +33,9 @@ steps:
   - attach_workspace:
       at: .
   - run:
+      name: Display size of the workspace folders before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
+  - run:
       name: Build package
       command: mvn -s .circleci/.circleci.settings.xml clean install
   - run:
@@ -86,7 +89,10 @@ steps:
       path: /tmp/artifacts/
   - store_test_results:
       path: /tmp/artifacts/test-results/
+  - run:
+      name: Display size of the workspace folders after running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - persist_to_workspace:
       root: << parameters.working_directory >>
       paths:
-        - .
+        - target/*
