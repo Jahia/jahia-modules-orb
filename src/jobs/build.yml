@@ -96,3 +96,4 @@ steps:
       root: << parameters.working_directory >>
       paths:
         - target/*
+        - ./*/target/*
