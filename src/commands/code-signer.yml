@@ -62,7 +62,7 @@ steps:
         tool_url=https://www.ssl.com/download/29764/
         curl -s $tool_url --output CodeSignTool.zip
         mkdir CodeSignTool
-        chmod -Rc a+x CodeSignTool
+        chmod -Rc 755 CodeSignTool
         unzip -d CodeSignTool CodeSignTool.zip
 
         # Download sign4j binary (to sign exes) and custom codesigntool script
