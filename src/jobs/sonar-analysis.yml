@@ -15,7 +15,7 @@ parameters:
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
   base_image:
     type: string
-    default: "jahia/cimg-mvn-cache:cimg_openjdk_8.0.275"
+    default: "jahia/cimg-mvn-cache:cimg_openjdk_8.0.312-node"
     description: "Base docker image to be used for running the job"
   working_directory:
     type: string
