@@ -213,6 +213,14 @@ steps:
         echo "${<< parameters.docker_username >>}"
         echo "${<< parameters.docker_password >>}" | docker login -u "${<< parameters.docker_username >>}" --password-stdin
 
+  # Look for the presence of an image.tar file, and if present, load it
+  - run:
+      name: Load docker image (if present
+      command: |
+        if [ -f image.tar ]; then
+          docker load -i image.tar
+        fi
+
   - run:
       name: Preparing build artifacts
       command: |
