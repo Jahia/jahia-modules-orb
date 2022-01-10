@@ -192,6 +192,8 @@ steps:
         echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
         echo "export NEXUS_USERNAME=${<< parameters.nexus_username >>}" >> $BASH_ENV
         echo "export NEXUS_PASSWORD=${<< parameters.nexus_password >>}" >> $BASH_ENV
+        echo "export DOCKER_COMPOSE_FILE=${<< parameters.docker_compose_file >>}" >> $BASH_ENV
+        
   - run:
       name: Displaying important environment variables
       command: |
