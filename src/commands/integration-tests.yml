@@ -261,7 +261,9 @@ steps:
         echo "List of docker images in local cache PRIOR pull" > ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
-        docker pull ${JAHIA_IMAGE}
+        if [[ "$JAHIA_IMAGE" != "" ]]; then
+          docker pull ${JAHIA_IMAGE}
+        fi
         echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
