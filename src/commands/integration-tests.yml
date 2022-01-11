@@ -192,6 +192,8 @@ steps:
         echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
         echo "export NEXUS_USERNAME=${<< parameters.nexus_username >>}" >> $BASH_ENV
         echo "export NEXUS_PASSWORD=${<< parameters.nexus_password >>}" >> $BASH_ENV
+        echo "export DOCKER_COMPOSE_FILE=<< parameters.docker_compose_file >>" >> $BASH_ENV
+
   - run:
       name: Displaying important environment variables
       command: |
@@ -200,6 +202,7 @@ steps:
         echo "TESTS_IMAGE=${TESTS_IMAGE}"
         echo "JCUSTOMER_IMAGE=${JCUSTOMER_IMAGE}"
         echo "ELASTICSEARCH_IMAGE=${ELASTICSEARCH_IMAGE}"
+        echo "DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE}"
   - run:
       name: Preparing export folder
       command: |
@@ -259,10 +262,12 @@ steps:
         echo "List of docker images in local cache PRIOR pull" > ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
-        docker pull ${JAHIA_IMAGE}
-        echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
-        docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
-        echo "--------------------------------------------------" >> ./artifacts/docker.log
+        if [[ "$JAHIA_IMAGE" != "" ]]; then
+          docker pull ${JAHIA_IMAGE}
+          echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
+          docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
+          echo "--------------------------------------------------" >> ./artifacts/docker.log
+        fi
 
   # Run a background task to display the running containers and their hash
   # This is used to verify that the right containers are running
