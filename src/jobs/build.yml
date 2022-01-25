@@ -28,6 +28,9 @@ resource_class: << parameters.resource_class >>
 
 docker:
   - image: << parameters.base_image >>
+    auth:
+      username: $DOCKERHUB_LOGIN
+      password: $DOCKERHUB_PASSWORD
 
 steps:
   - attach_workspace:
