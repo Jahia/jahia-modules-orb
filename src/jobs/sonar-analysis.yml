@@ -34,7 +34,7 @@ docker:
   - image: << parameters.base_image >>
     auth:
       username: $DOCKERHUB_LOGIN
-      password: $DOCKERHUB_PASSWORD  
+      password: $DOCKERHUB_PASSWORD
 
 steps:
   - attach_workspace:
