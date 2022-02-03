@@ -22,7 +22,7 @@ steps:
       name: Sonar Release branch analysis
       environment:
         DEPENDENCY_CHECK_SETTINGS:
-          -DfailOnError=false -DskipProvidedScope=true -DskipTestScope=false -DskipSystemScope=true 
+          -DfailOnError=false -DskipProvidedScope=true -DskipTestScope=false -DskipSystemScope=true
           -Dformats=HTML,JSON -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json
           -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
           -DretireJsAnalyzerEnabled=false -DnodeAnalyzerEnabled=false -DdataDirectory=/home/circleci/.owasp/dependency-check-data
