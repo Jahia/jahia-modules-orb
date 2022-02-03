@@ -192,6 +192,8 @@ steps:
         echo "export ELASTICSEARCH_IMAGE=<< parameters.elasticsearch_image >>" >> $BASH_ENV
         echo "export NEXUS_USERNAME=${<< parameters.nexus_username >>}" >> $BASH_ENV
         echo "export NEXUS_PASSWORD=${<< parameters.nexus_password >>}" >> $BASH_ENV
+        echo "export DOCKER_COMPOSE_FILE=<< parameters.docker_compose_file >>" >> $BASH_ENV
+
   - run:
       name: Displaying important environment variables
       command: |
@@ -200,6 +202,7 @@ steps:
         echo "TESTS_IMAGE=${TESTS_IMAGE}"
         echo "JCUSTOMER_IMAGE=${JCUSTOMER_IMAGE}"
         echo "ELASTICSEARCH_IMAGE=${ELASTICSEARCH_IMAGE}"
+        echo "DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE}"
   - run:
       name: Preparing export folder
       command: |
@@ -212,6 +215,14 @@ steps:
       command: |
         echo "${<< parameters.docker_username >>}"
         echo "${<< parameters.docker_password >>}" | docker login -u "${<< parameters.docker_username >>}" --password-stdin
+
+  # Look for the presence of an image.tar file, and if present, load it
+  - run:
+      name: Load docker image (if present
+      command: |
+        if [ -f image.tar ]; then
+          docker load -i image.tar
+        fi
 
   - run:
       name: Preparing build artifacts
@@ -251,10 +262,12 @@ steps:
         echo "List of docker images in local cache PRIOR pull" > ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
-        docker pull ${JAHIA_IMAGE}
-        echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
-        docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
-        echo "--------------------------------------------------" >> ./artifacts/docker.log
+        if [[ "$JAHIA_IMAGE" != "" ]]; then
+          docker pull ${JAHIA_IMAGE}
+          echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
+          docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
+          echo "--------------------------------------------------" >> ./artifacts/docker.log
+        fi
 
   # Run a background task to display the running containers and their hash
   # This is used to verify that the right containers are running
@@ -334,12 +347,6 @@ steps:
 
   - store_test_results:
       path: << parameters.tests_path >>artifacts/results/xml_reports
-  - run:
-      name: remove xml results folder
-      when: always
-      command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
-  - store_artifacts:
-      path: << parameters.tests_path >>artifacts/results
   # Once all is executed, results are submitted to external platforms
   # Testrail report and Slack (failure only) notifications are sent during scheduled executions or merged into the main branch
   - run:
@@ -372,8 +379,8 @@ steps:
           jahia-reporter testrail \
             --testrailUsername=${<< parameters.testrail_username >>} \
             --testrailPassword=${<< parameters.testrail_password >>} \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --projectName="<< parameters.testrail_project >>" \
             --milestone="<< parameters.testrail_milestone >>" \
             --defaultRunDescription="This test was executed on circleci, $CIRCLE_BUILD_URL"
@@ -392,8 +399,8 @@ steps:
               nvm use --lts
           fi
           jahia-reporter pagerduty:incident \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --pdApiKey=${<< parameters.incident_pagerduty_api_key >>} \
             --pdReporterEmail=${<< parameters.incident_pagerduty_reporter_email >>} \
             --pdReporterId=${<< parameters.incident_pagerduty_reporter_id >>} \
@@ -421,8 +428,8 @@ steps:
             --channelAllId=${<< parameters.slack_channel_id_notifications_all >>} \
             --token=${<< parameters.slack_client_token >>} \
             --skipSuccessful \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --msgAuthor="CircleCI ($CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME)" \
             --runUrl=$CIRCLE_BUILD_URL
@@ -442,9 +449,15 @@ steps:
           jahia-reporter zencrepes \
             --webhook="https://zencrepes.jahia.com/zqueue/testing/webhook" \
             --webhookSecret=${<< parameters.zencrepes_secret >>} \
-            --sourcePath="artifacts/results/reports" \
-            --sourceType="json" \
+            --sourcePath="artifacts/results/xml_reports" \
+            --sourceType="xml" \
             --moduleFilepath="artifacts/results/installed-jahia-modules.json" \
             --name="<< parameters.module_id >>" \
             --runUrl=$CIRCLE_BUILD_URL
         fi
+  - run:
+      name: remove xml results folder
+      when: always
+      command: rm -rf << parameters.tests_path >>artifacts/results/xml_reports
+  - store_artifacts:
+      path: << parameters.tests_path >>artifacts/results

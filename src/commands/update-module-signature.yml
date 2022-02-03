@@ -1,0 +1,159 @@
+# TODO BACKLOG-16625 clean this command
+# Run pom signature for module and sub modules
+description: >
+  Add signature to a pom file for a module and sub modules if any
+   - Download keymaker artifact
+   - Sign modules with sub modules
+   - Sign modules without sub modules
+
+parameters:
+  ssh_key_fingerprint:
+    type: string
+    description: "Used for fetching external repos"
+  root_directory:
+    type: string
+    default: "~"
+    description: >
+      Parent directory of the module to update
+  except_folders:
+    type: string
+    default: "*"
+    description: >
+      Regular expression of folders to not analyze when looking for module to sign
+
+  # context variables
+  nexus_enterprise_releases_url:
+    type: env_var_name
+    default: NEXUS_ENTERPRISE_RELEASES_URL
+    description: "Nexus Enterprise release URL"
+  nexus_username:
+    type: env_var_name
+    default: NEXUS_USERNAME
+    description: "Nexus Username"
+  nexus_password:
+    type: env_var_name
+    default: NEXUS_PASSWORD
+    description: "Nexus Password"
+  #keymaker informations
+  keymaker_location:
+    type: string
+    default: "org/jahia/keymaker/keymaker-cli"
+    description: "Location of the keymaker"
+  keymaker_version:
+    type: string
+    default: "2.0"
+    description: "Version of the keymaker"
+  keymaker_name:
+    type: string
+    default: "keymaker-cli"
+    description: "Name of the keymaker (id)"
+
+steps:
+  - add_ssh_keys:
+      fingerprints:
+        - << parameters.ssh_key_fingerprint >>
+  - run:
+      name: Setting up github configuration
+      command: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        git config --global user.email "jahia-ci@jahia.com"
+        git config --global user.name "Jahia CI"
+  - run:
+      name: Downloading keymaker artifacts
+      command: |
+        cd ~
+        mkdir -p target/keymaker
+        url="${<< parameters.nexus_enterprise_releases_url >>}/content/<< parameters.keymaker_location >>/<< parameters.keymaker_version >>/<< parameters.keymaker_name >>-<< parameters.keymaker_version >>-jar-with-dependencies.jar"
+        curl --header "Authorization: Basic $(echo -n "${<< parameters.nexus_username >>}:${<< parameters.nexus_password >>}" | base64)" \
+            --url "${url}" \
+            --output "target/keymaker/<< parameters.keymaker_name >>.jar"
+        KEYMAKER_CLI_JAR="$(pwd)/target/keymaker/<< parameters.keymaker_name >>.jar"
+        echo "export KEYMAKER_CLI_JAR=${KEYMAKER_CLI_JAR}" >> $BASH_ENV
+        . $BASH_ENV
+  - run:
+      name: Handling signature update for single or multiple submodules
+      command: |
+        cd <<parameters.root_directory>>
+        modules_to_sign=($(ls -d */ | egrep -v "^<<parameters.except_folders>>"))
+        if [[ -z "$modules_to_sign" ]]; then
+          for module_dir in ${modules_to_sign[@]}; do
+            echo "Try to sign module" $module_dir
+            cd $module_dir
+            root_dir=$(pwd)
+            if [[ -f "pom.xml" ]]; then
+              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+              if [[ ${packaging_type} == "pom" ]]; then
+                project_modules=($(mvn -q --also-make exec:exec -Dexec.executable="pwd"))
+                for module in ${project_modules[@]:1}; do
+                  if [[ ${module} != ${root_dir} ]]; then
+                    cd $module
+                    group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
+                    parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
+                    project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                    packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs | xargs)
+                    if [[ ${packaging_type} == "bundle" ]]; then
+                      KEYMAKER_CLI_OUTPUT=`java -jar ${KEYMAKER_CLI_JAR} pom -f pom.xml -s`
+                      if [[ ${group_id} == "org.jahia.modules" || ${parent_group_id} == "org.jahia.modules" ]]; then
+                        if [[ $(echo $KEYMAKER_CLI_OUTPUT | grep -w "Signature valid" | wc -l) != "1" ]]; then
+                          sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                          sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                          git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
+                          current_branch=$(git branch --show-current)
+                          git push -u origin ${current_branch}
+                        else
+                          echo "Signature is up-to-date."
+                        fi
+                      else
+                        echo "This project is not a Jahia module."
+                      fi
+                    else
+                      echo "Ignoring project ${project_name} b/c it's a ${packaging_type} packaging type"
+                    fi
+                    cd -
+                  fi
+                done
+              else
+                echo "There are no submodules in this project"
+              fi
+            fi
+            cd <<parameters.root_directory>>
+          done
+        fi
+  - run:
+      name: Handling signature for a single module
+      command: |
+        cd <<parameters.root_directory>>
+        modules_to_sign=($(ls -d */ | egrep -v "^<<parameters.except_folders>>"))
+        if [[ -z "$modules_to_sign" ]]; then
+          for module_dir in ${modules_to_sign[@]}; do
+            cd $module_dir
+            if [[ -f "pom.xml" ]]; then
+              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+              echo "Packing type: ${packaging_type}"
+              if [[ ${packaging_type} == "bundle" ]]; then
+                group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
+                parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
+                project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                if [[ ${group_id} != "org.jahia.modules" && ${parent_group_id} != "org.jahia.modules" ]]; then
+                  echo "Project is not a Jahia modules"
+                else
+                  KEYMAKER_CLI_OUTPUT=`java -jar ${KEYMAKER_CLI_JAR} pom -f pom.xml -s`
+                  if [[ $(echo $KEYMAKER_CLI_OUTPUT | grep -w "Signature valid" | wc -l) == "1" ]]; then
+                    echo "Signature is already up-to-date"
+                  else
+                    echo "New signature: ${KEYMAKER_CLI_OUTPUT}"
+                    sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                    sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                    git add pom.xml && git commit -m "[ci skip] Updated signature for ${project_name}"
+                    current_branch=$(git branch --show-current)
+                    git push -u origin ${current_branch}
+                  fi
+                fi
+              else
+                echo "There are submodule(s) in this projects"
+              fi
+            fi
+            cd <<parameters.root_directory>>
+          done
+        fi

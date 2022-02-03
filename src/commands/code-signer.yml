@@ -41,6 +41,10 @@ parameters:
     type: env_var_name
     default: TOTP_SECRET
     description: "Used to generate TOTP token"
+  codesigntool_url:
+    type: env_var_name
+    default: CODESIGNTOOL_URL
+    description: "Used to download the CodeSignTool zip"
 
 
 steps:
@@ -59,14 +63,16 @@ steps:
       command: |
         # Download CodeSignTool
         sudo -u root apt-get update && sudo -u root apt-get install -y oathtool
-        tool_url=https://www.ssl.com/download/29764/
+        tool_url=${<< parameters.codesigntool_url >>}
         curl -s $tool_url --output CodeSignTool.zip
-        unzip CodeSignTool.zip # unzips CodeSignTool-v1.2.0 dir
+        mkdir CodeSignTool
+        unzip -d CodeSignTool CodeSignTool.zip
+        chmod -Rc 755 CodeSignTool
 
         # Download sign4j binary (to sign exes) and custom codesigntool script
         git clone --depth 1 --branch master git@github.com:Jahia/JahiaReleaseTool.git
-        cp JahiaReleaseTool/bin/sign4j CodeSignTool-v1.2.0
-        cp JahiaReleaseTool/codeSignTool-sign4j.sh CodeSignTool-v1.2.0
+        cp JahiaReleaseTool/bin/sign4j CodeSignTool
+        cp JahiaReleaseTool/codeSignTool-sign4j.sh CodeSignTool
 
         # Clean-up
         rm -rf JahiaReleaseTool
@@ -75,7 +81,7 @@ steps:
   - run:
       name: Generate signed installer files
       command: |
-        cd CodeSignTool-v1.2.0
+        cd CodeSignTool
         export OUTPUT_DIR=/tmp/signed-installers
         export TOTP_SECRET=${<< parameters.totp_secret >>}
         mkdir $OUTPUT_DIR

@@ -15,7 +15,7 @@ parameters:
     description: "Working directory for the job"
   base_image:
     type: string
-    default: "jahia/cimg-mvn-cache:cimg_openjdk_8.0.275"
+    default: "jahia/cimg-mvn-cache:cimg_openjdk_8.0.312-node"
     description: "Base docker image to be used for running the job"
   module_id:
     type: string
@@ -28,10 +28,16 @@ resource_class: << parameters.resource_class >>
 
 docker:
   - image: << parameters.base_image >>
+    auth:
+      username: $DOCKERHUB_LOGIN
+      password: $DOCKERHUB_PASSWORD
 
 steps:
   - attach_workspace:
       at: .
+  - run:
+      name: Display size of the workspace folders before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - run:
       name: Build package
       command: mvn -s .circleci/.circleci.settings.xml clean install
@@ -86,7 +92,11 @@ steps:
       path: /tmp/artifacts/
   - store_test_results:
       path: /tmp/artifacts/test-results/
+  - run:
+      name: Display size of the workspace folders after running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - persist_to_workspace:
       root: << parameters.working_directory >>
       paths:
-        - .
+        - target/*
+        - ./*/target/*

@@ -23,13 +23,22 @@ resource_class: << parameters.resource_class >>
 
 docker:
   - image: << parameters.base_image >>
+    auth:
+      username: $DOCKERHUB_LOGIN
+      password: $DOCKERHUB_PASSWORD
 
 steps:
   - attach_workspace:
       at: .
+  - run:
+      name: Display size of the workspace folders before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
   - restore_cache:
       keys:
         - v1-maven-dependencies-{{ checksum "maven_cache_seed" }}
   - run:
       name: Deploy artifacts to server repository
       command: mvn -s .circleci/.circleci.settings.xml clean deploy
+  - run:
+      name: Display size of the workspace folders after running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>

@@ -8,7 +8,7 @@ parameters:
     description: "Name of the primary release branch (master, main, ...)"
   base_image:
     type: string
-    default: "cimg/openjdk:8.0.302-node"
+    default: "jahia/cimg-mvn-cache:cimg_openjdk_8.0.312-node"
     description: "Base docker image to be used for running the job"
   module_id:
     type: string
@@ -52,6 +52,9 @@ resource_class: << parameters.resource_class >>
 
 docker:
   - image: << parameters.base_image >>
+    auth:
+      username: $DOCKERHUB_LOGIN
+      password: $DOCKERHUB_PASSWORD
 
 steps:
   - checkout

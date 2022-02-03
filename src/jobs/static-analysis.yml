@@ -50,6 +50,23 @@ docker:
 steps:
   - attach_workspace:
       at: .
+  - run:
+      name: Display size of the workspace folders before running job (for space optimization)
+      command: du -h -d 1 << parameters.working_directory >>
+  - run:
+      name: Run yarn if package.json exists in module folder
+      command: |
+        if [[ -d << parameters.module_path >> && -e "<< parameters.module_path >>package.json" ]]; then
+          cd << parameters.module_path >>
+          yarn
+        fi
+  - run:
+      name: Run yarn if packages.json exists in test folder
+      command: |
+        if [[ -d << parameters.tests_path >> && -e "<< parameters.tests_path >>package.json" ]]; then
+          cd << parameters.tests_path >>
+          yarn
+        fi
   - lint:
       module_path: << parameters.module_path >>
       tests_path: << parameters.tests_path >>
