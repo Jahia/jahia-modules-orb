@@ -22,3 +22,4 @@ Please see this page for more details: https://circleci.com/docs/2.0/creating-or
 
 This is an Open-Source module, you can find more details about Open-Source @ Jahia [in this repository](https://github.com/Jahia/open-source).
  
+ 
