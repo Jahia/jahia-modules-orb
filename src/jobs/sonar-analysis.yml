@@ -25,6 +25,10 @@ parameters:
     type: string
     default: "15m"
     description: Maximum acceptable period of time to be passed with no output.
+  owasp_suppression_files:
+    type: string
+    default: ""
+    description: "Comma separated list of filenames with suppression definitions for the OWASP dependency check"
 
 working_directory: << parameters.working_directory >>
 
@@ -47,6 +51,7 @@ steps:
       github_slug: << parameters.github_slug >>
       primary_release_branch: << parameters.primary_release_branch >>
       no_output_timeout: << parameters.no_output_timeout >>
+      owasp_suppression_files: << parameters.owasp_suppression_files >>
   - save_cache:
       paths:
         - ~/.owasp/dependency-check-data

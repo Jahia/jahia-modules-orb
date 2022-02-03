@@ -13,15 +13,20 @@ parameters:
     description: Maximum acceptable period of time to be passed with no output.
     type: string
     default: "15m"
+  owasp_suppression_files:
+    type: string
+    default: ""
+    description: "Comma separated list of filenames with suppression definitions for the OWASP dependency check"
 steps:
   - run:
       name: Sonar Release branch analysis
       environment:
         DEPENDENCY_CHECK_SETTINGS:
-          -DfailOnError=false -DskipProvidedScope=true -DskipTestScope=false -Dformats=HTML,JSON
-          -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json
+          -DfailOnError=false -DskipProvidedScope=true -DskipTestScope=false -DskipSystemScope=true 
+          -Dformats=HTML,JSON -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json
           -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
           -DretireJsAnalyzerEnabled=false -DnodeAnalyzerEnabled=false -DdataDirectory=/home/circleci/.owasp/dependency-check-data
+          -DsuppressionFiles="<<parameters.owasp_suppression_files>>"
       command: |
         if [[ ! -z "$CIRCLE_PULL_REQUEST" ]]; then
           echo "Executing a PR based analysis"
@@ -32,11 +37,11 @@ steps:
               -Dsonar.pullrequest.github.repository=<< parameters.github_slug >>
         elif [[ "$CIRCLE_BRANCH" == << parameters.primary_release_branch >> ]]; then
           echo "Executing an analysis on the main branch"
-          mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:6.1.6:aggregate sonar:sonar \
+          mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:6.5.3:aggregate sonar:sonar \
               $DEPENDENCY_CHECK_SETTINGS
         else
           echo "Executing an analysis on branch: $CIRCLE_BRANCH"
-          mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:6.1.6:aggregate sonar:sonar \
+          mvn -s .circleci/.circleci.settings.xml org.owasp:dependency-check-maven:6.5.3:aggregate sonar:sonar \
               -Dsonar.branch.name=$CIRCLE_BRANCH $DEPENDENCY_CHECK_SETTINGS
         fi
       no_output_timeout: << parameters.no_output_timeout >>
