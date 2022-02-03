@@ -26,11 +26,7 @@ steps:
           -Dformats=HTML,JSON -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json
           -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
           -DretireJsAnalyzerEnabled=false -DnodeAnalyzerEnabled=false -DdataDirectory=/home/circleci/.owasp/dependency-check-data
-<<<<<<< HEAD
           -DsuppressionFiles=<<parameters.owasp_suppression_files>>
-=======
-          -DsuppressionFiles="<<parameters.owasp_suppression_files>>"
->>>>>>> refs/remotes/origin/main
       command: |
         if [[ ! -z "$CIRCLE_PULL_REQUEST" ]]; then
           echo "Executing a PR based analysis"
