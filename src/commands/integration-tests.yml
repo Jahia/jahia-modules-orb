@@ -253,21 +253,24 @@ steps:
           docker save -o tests_image.tar << parameters.tests_image >>
         fi
 
-  # Pull the latest version of ${JAHIA_IMAGE}
+  # Pull the latest version of ${JAHIA_IMAGE} and ${JCUSTOMER_IMAGE}
   - run:
-      name: Pull the latest version of Jahia and print docker images cache to console
+      name: Pull the latest version of Jahia and jCustomer and print docker images cache to console
       command: |
         cd << parameters.tests_path >>
         . ./set-env.sh
-        echo "List of docker images in local cache PRIOR pull" > ./artifacts/docker.log
+        echo "List of docker images in local cache PRIOR pull" >> ./artifacts/docker.log
         docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
         echo "--------------------------------------------------" >> ./artifacts/docker.log
         if [[ "$JAHIA_IMAGE" != "" ]]; then
           docker pull ${JAHIA_IMAGE}
-          echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
-          docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
-          echo "--------------------------------------------------" >> ./artifacts/docker.log
         fi
+        if [[ "$JCUSTOMER_IMAGE" != "" ]]; then
+          docker pull ${JCUSTOMER_IMAGE}
+        fi
+        echo "List of docker images in local cache AFTER pull" >> ./artifacts/docker.log
+        docker images --digests --all 2>&1 | tee -a ./artifacts/docker.log
+        echo "--------------------------------------------------" >> ./artifacts/docker.log
 
   # Run a background task to display the running containers and their hash
   # This is used to verify that the right containers are running
