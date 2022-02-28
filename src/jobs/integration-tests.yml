@@ -139,6 +139,10 @@ parameters:
     type: env_var_name
     default: TESTRAIL_PASSWORD
     description: "Testtrail Password"
+  incident_service:
+    type: string
+    default: ""
+    description: "Default to Module ID, name of the Test Service to use for incident reporting"
   ci_startup_script:
     type: string
     default: "ci.startup.sh"
@@ -196,6 +200,7 @@ steps:
       slack_webhook_notifications_all: << parameters.slack_webhook_notifications_all >>
       should_skip_zencrepes: << parameters.should_skip_zencrepes >>
       should_build_testsimage: << parameters.should_build_testsimage >>
+      incident_service: << parameters.incident_service >>
       zencrepes_secret: << parameters.zencrepes_secret >>
       testrail_project: << parameters.testrail_project >>
       testrail_milestone: << parameters.testrail_milestone >>

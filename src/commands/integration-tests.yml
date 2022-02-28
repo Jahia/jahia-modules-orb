@@ -148,6 +148,10 @@ parameters:
     type: env_var_name
     default: INCIDENT_GOOGLE_PRIVATE_KEY_BASE64
     description: "Google base64 encoded private key to allow access to Google API"
+  incident_service:
+    type: string
+    default: ""
+    description: "Default to Module ID, name of the Test Service to use for incident reporting"
   testrail_project:
     type: string
     default: "Default"
@@ -401,6 +405,12 @@ steps:
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
               nvm use --lts
           fi
+          if [ "<< parameters.incident_service >>" == "" ]; then
+            INCIDENT_SERVICE=<< parameters.module_id >>
+          else
+            INCIDENT_SERVICE=<< parameters.incident_service >>
+          fi
+          echo "Using Service (Test Service in the spreadsheet): ${INCIDENT_SERVICE}"
           jahia-reporter pagerduty:incident \
             --sourcePath="artifacts/results/xml_reports" \
             --sourceType="xml" \
@@ -411,7 +421,7 @@ steps:
             --googleSpreadsheetId=${<< parameters.incident_google_spreadsheet_id >>} \
             --googleClientEmail=${<< parameters.incident_google_client_email >>} \
             --googleApiKey=${<< parameters.incident_google_api_key_base64 >>} \
-            --service=<< parameters.module_id >> \
+            --service=${INCIDENT_SERVICE} \
             --sourceUrl=$CIRCLE_BUILD_URL
         fi
   - run:
