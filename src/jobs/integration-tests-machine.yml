@@ -122,7 +122,7 @@ parameters:
   incident_service:
     type: string
     default: ""
-    description: "Default to Module ID, name of the Test Service to use for incident reporting"    
+    description: "Default to Module ID, name of the Test Service to use for incident reporting"
   zencrepes_secret:
     type: env_var_name
     default: ZENCREPES_WEBHOOK_SECRET
