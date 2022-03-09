@@ -94,7 +94,7 @@ steps:
         packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
         echo "Packaging type: ${packaging_type}"
         if [[ ${packaging_type} == "pom" ]]; then
-          mvn clean install
+          mvn install
           project_modules=($(mvn -q --also-make exec:exec -Dexec.executable="pwd"))
           for module in ${project_modules[@]:1}; do
             if [[ ${module} != ${root_dir} ]]; then
