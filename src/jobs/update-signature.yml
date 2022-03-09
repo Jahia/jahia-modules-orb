@@ -5,7 +5,7 @@ description: >
 parameters:
   resource_class:
     type: string
-    default: "small"
+    default: "xlarge"
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
   base_image:
     type: string
