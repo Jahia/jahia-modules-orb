@@ -92,7 +92,9 @@ steps:
       command: |
         root_dir=$(pwd)
         packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+        echo "Packaging type: ${packaging_type}"
         if [[ ${packaging_type} == "pom" ]]; then
+          mvn clean install
           project_modules=($(mvn -q --also-make exec:exec -Dexec.executable="pwd"))
           for module in ${project_modules[@]:1}; do
             if [[ ${module} != ${root_dir} ]]; then
@@ -128,7 +130,7 @@ steps:
       name: Handling signature for a single module
       command: |
         packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
-        echo "Packing type: ${packaging_type}"
+        echo "Packaging type: ${packaging_type}"
         if [[ ${packaging_type} == "bundle" ]]; then
           group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
           parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
