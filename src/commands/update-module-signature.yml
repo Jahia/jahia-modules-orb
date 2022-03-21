@@ -128,7 +128,7 @@ steps:
       name: Handling signature for a single module
       command: |
         cd <<parameters.root_directory>>
-        modules_to_sign=($(ls -d */ | egrep -v "^<<parameters.except_folders>>"))
+        modules_to_sign=($(ls -d */ | egrep -v "^<<parameters.except_folders>>" || true))
         if [[ -z "$modules_to_sign" ]]; then
           for module_dir in ${modules_to_sign[@]}; do
             cd $module_dir
@@ -160,4 +160,6 @@ steps:
             fi
             cd <<parameters.root_directory>>
           done
+        else
+          echo "No modules to sign"
         fi
