@@ -67,4 +67,4 @@ steps:
       name: Delete github tag << parameters.release_version >>
       command: |
         git tag --delete << parameters.release_version >>
-        git push --delete origin << parameters.release_version >>
+        git push origin :refs/tags/<< parameters.release_version >>
