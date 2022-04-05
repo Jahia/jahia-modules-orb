@@ -34,8 +34,8 @@ parameters:
 
 #resource_class: << parameters.resource_class >>
 
-#docker:
-#  - image: << parameters.base_image >>
+docker:
+  - image: << parameters.base_image >>
 
 steps:
   - run:
