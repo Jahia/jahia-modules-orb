@@ -30,46 +30,50 @@ parameters:
     default: GITHUB_API_TOKEN
     description: "GitHub API token"
 
-working_directory: << parameters.working_directory >>
+#working_directory: << parameters.working_directory >>
 
-resource_class: << parameters.resource_class >>
+#resource_class: << parameters.resource_class >>
 
 docker:
   - image: << parameters.base_image >>
 
 steps:
-  - checkout
-  - attach_workspace:
-      at: .
-  - add_ssh_keys:
-      fingerprints:
-        - << parameters.ssh_key_fingerprints >>
   - run:
-      name: Display size of the workspace folders before running job (for space optimization)
-      command: du -h -d 1 << parameters.working_directory >>
-  - run:
-      name: Setting up github configuration
+      name: Generate changelog (deprecated)
       command: |
-        mkdir -p ~/.ssh
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        git config user.email << parameters.git_user_email >>
-        git config user.name << parameters.git_user_name >>
-  - run:
-      name: Getting latest changes from the remote branch
-      command: |
-        git fetch --all
-        git pull origin $CIRCLE_BRANCH --quiet
-  - run:
-      name: Update Changelog
-      command: |
-        yarn
-        yarn add auto
-        GH_TOKEN=${<< parameters.github_api_token >>} yarn auto changelog
-        git push --set-upstream origin $CIRCLE_BRANCH
-  - run:
-      name: Display size of the workspace folders after running job (for space optimization)
-      command: du -h -d 1 << parameters.working_directory >>
-  - persist_to_workspace:
-      root: << parameters.working_directory >>
-      paths:
-        - CHANGELOG.md
+        echo "This job has been deprecated"
+#  - checkout
+#  - attach_workspace:
+#      at: .
+#  - add_ssh_keys:
+#      fingerprints:
+#        - << parameters.ssh_key_fingerprints >>
+#  - run:
+#      name: Display size of the workspace folders before running job (for space optimization)
+#      command: du -h -d 1 << parameters.working_directory >>
+#  - run:
+#      name: Setting up github configuration
+#      command: |
+#        mkdir -p ~/.ssh
+#        ssh-keyscan github.com >> ~/.ssh/known_hosts
+#        git config user.email << parameters.git_user_email >>
+#        git config user.name << parameters.git_user_name >>
+#  - run:
+#      name: Getting latest changes from the remote branch
+#      command: |
+#        git fetch --all
+#        git pull origin $CIRCLE_BRANCH --quiet
+#  - run:
+#      name: Update Changelog
+#      command: |
+#        yarn
+#        yarn add auto
+#        GH_TOKEN=${<< parameters.github_api_token >>} yarn auto changelog
+#        git push --set-upstream origin $CIRCLE_BRANCH
+#  - run:
+#      name: Display size of the workspace folders after running job (for space optimization)
+#      command: du -h -d 1 << parameters.working_directory >>
+#  - persist_to_workspace:
+#      root: << parameters.working_directory >>
+#      paths:
+#        - CHANGELOG.md
