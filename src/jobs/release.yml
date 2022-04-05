@@ -81,7 +81,7 @@ steps:
          git config user.email << parameters.git_user_email >>
          git config user.name << parameters.git_user_name >>
          git tag --delete << parameters.release_version >>
-         git push --delete origin << parameters.release_version >>
+         git push origin :refs/tags/<< parameters.release_version >>
   - run:
       name: Release prepare version for << parameters.release_version >>
       command: |
