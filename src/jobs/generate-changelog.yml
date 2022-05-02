@@ -8,7 +8,7 @@ parameters:
     description: "CircleCI resource_class (small, medium, large, xlarge, ...)"
   base_image:
     type: string
-    default: "cimg/node:lts"
+    default: "cimg/node:16.14"
     description: "Base docker image to be used for running the job"
   working_directory:
     type: string
