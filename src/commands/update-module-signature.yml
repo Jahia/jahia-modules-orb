@@ -47,6 +47,10 @@ parameters:
     type: string
     default: "keymaker-cli"
     description: "Name of the keymaker (id)"
+  dry_run:
+    type: boolean
+    default: false
+    description: "Skips git commit/push if set to true"
 
 steps:
   - add_ssh_keys:
@@ -82,7 +86,7 @@ steps:
             cd $module_dir
             root_dir=$(pwd)
             if [[ -f "pom.xml" ]]; then
-              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs || true)
               echo "Packaging type: ${packaging_type}"
               if [[ ${packaging_type} == "pom" ]]; then
                 mvn install
@@ -100,9 +104,13 @@ steps:
                         if [[ $(echo $KEYMAKER_CLI_OUTPUT | grep -w "Signature valid" | wc -l) != "1" ]]; then
                           sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                           sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
-                          git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
-                          current_branch=$(git branch --show-current)
-                          git push -u origin ${current_branch}
+                          if [ "<<parameters.dry_run>>" = "true" ]; then
+                            git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
+                            current_branch=$(git branch --show-current)
+                            git push -u origin ${current_branch}
+                          else
+                            echo "Skipping git commit/push"
+                          fi
                         else
                           echo "Signature is up-to-date."
                         fi
@@ -149,9 +157,13 @@ steps:
                     echo "New signature: ${KEYMAKER_CLI_OUTPUT}"
                     sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                     sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
-                    git add pom.xml && git commit -m "[ci skip] Updated signature for ${project_name}"
-                    current_branch=$(git branch --show-current)
-                    git push -u origin ${current_branch}
+                    if [ "<<parameters.dry_run>>" = "true" ]; then
+                      git add pom.xml && git commit -m "[ci skip] Updated signature for ${project_name}"
+                      current_branch=$(git branch --show-current)
+                      git push -u origin ${current_branch}
+                    else
+                      echo "Skipping git commit/push"
+                    fi
                   fi
                 fi
               else
