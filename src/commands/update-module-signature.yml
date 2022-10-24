@@ -68,7 +68,7 @@ steps:
       command: |
         cd ~
         mkdir -p target/keymaker
-        url="${<< parameters.nexus_enterprise_releases_url >>}/content/<< parameters.keymaker_location >>/<< parameters.keymaker_version >>/<< parameters.keymaker_name >>-<< parameters.keymaker_version >>-jar-with-dependencies.jar"
+        url="${<< parameters.nexus_enterprise_releases_url >>}/<< parameters.keymaker_location >>/<< parameters.keymaker_version >>/<< parameters.keymaker_name >>-<< parameters.keymaker_version >>-jar-with-dependencies.jar"
         curl --header "Authorization: Basic $(echo -n "${<< parameters.nexus_username >>}:${<< parameters.nexus_password >>}" | base64)" \
             --url "${url}" \
             --output "target/keymaker/<< parameters.keymaker_name >>.jar"
