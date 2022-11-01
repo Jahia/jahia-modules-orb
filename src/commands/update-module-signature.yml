@@ -94,10 +94,11 @@ steps:
                 for module in ${project_modules[@]:1}; do
                   if [[ ${module} != ${root_dir} ]]; then
                     cd $module
-                    group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
-                    parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
-                    project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                    group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs || true)
+                    parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs || true)
+                    project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs || "$module_dir")
                     packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs | xargs)
+                    echo "group_id=${group_id}; parent_group_id=${parent_group_id}; project_name=${project_name}; packaging_type=${packaging_type}"
                     if [[ ${packaging_type} == "bundle" ]]; then
                       KEYMAKER_CLI_OUTPUT=`java -jar ${KEYMAKER_CLI_JAR} pom -f pom.xml -s`
                       if [[ ${group_id} == "org.jahia.modules" || ${parent_group_id} == "org.jahia.modules" ]]; then
@@ -139,14 +140,16 @@ steps:
         modules_to_sign=($(ls -d */ | egrep -v "^<<parameters.except_folders>>" || true))
         if [[ ! -z "$modules_to_sign" ]]; then
           for module_dir in ${modules_to_sign[@]}; do
+            echo "Try to sign module" $module_dir
             cd $module_dir
             if [[ -f "pom.xml" ]]; then
-              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs || true)
               echo "Packaging type: ${packaging_type}"
               if [[ ${packaging_type} == "bundle" ]]; then
-                group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
-                parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
-                project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs || true)
+                parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs || true)
+                project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs || "$module_dir")
+                echo "group_id=${group_id}; parent_group_id=${parent_group_id}; project_name=${project_name}"
                 if [[ ${group_id} != "org.jahia.modules" && ${parent_group_id} != "org.jahia.modules" ]]; then
                   echo "Project is not a Jahia modules"
                 else
