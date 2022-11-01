@@ -105,11 +105,11 @@ steps:
                           sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                           sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                           if [ "<<parameters.dry_run>>" = "true" ]; then
+                            echo "Skipping git commit/push"
+                          else
                             git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
                             current_branch=$(git branch --show-current)
                             git push -u origin ${current_branch}
-                          else
-                            echo "Skipping git commit/push"
                           fi
                         else
                           echo "Signature is up-to-date."
@@ -158,11 +158,11 @@ steps:
                     sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                     sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                     if [ "<<parameters.dry_run>>" = "true" ]; then
-                      git add pom.xml && git commit -m "[ci skip] Updated signature for ${project_name}"
+                      echo "Skipping git commit/push"
+                    else
+                      git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
                       current_branch=$(git branch --show-current)
                       git push -u origin ${current_branch}
-                    else
-                      echo "Skipping git commit/push"
                     fi
                   fi
                 fi
