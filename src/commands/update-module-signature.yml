@@ -94,10 +94,11 @@ steps:
                 for module in ${project_modules[@]:1}; do
                   if [[ ${module} != ${root_dir} ]]; then
                     cd $module
-                    group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
-                    parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
-                    project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                    group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs || true)
+                    parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs || true)
+                    project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs || "$module_dir")
                     packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs | xargs)
+                    echo "group_id=${group_id}; parent_group_id=${parent_group_id}; project_name=${project_name}; packaging_type=${packaging_type}"
                     if [[ ${packaging_type} == "bundle" ]]; then
                       KEYMAKER_CLI_OUTPUT=`java -jar ${KEYMAKER_CLI_JAR} pom -f pom.xml -s`
                       if [[ ${group_id} == "org.jahia.modules" || ${parent_group_id} == "org.jahia.modules" ]]; then
@@ -105,11 +106,11 @@ steps:
                           sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                           sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                           if [ "<<parameters.dry_run>>" = "true" ]; then
+                            echo "Skipping git commit/push"
+                          else
                             git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
                             current_branch=$(git branch --show-current)
                             git push -u origin ${current_branch}
-                          else
-                            echo "Skipping git commit/push"
                           fi
                         else
                           echo "Signature is up-to-date."
@@ -139,14 +140,16 @@ steps:
         modules_to_sign=($(ls -d */ | egrep -v "^<<parameters.except_folders>>" || true))
         if [[ ! -z "$modules_to_sign" ]]; then
           for module_dir in ${modules_to_sign[@]}; do
+            echo "Try to sign module" $module_dir
             cd $module_dir
             if [[ -f "pom.xml" ]]; then
-              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+              packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs || true)
               echo "Packaging type: ${packaging_type}"
               if [[ ${packaging_type} == "bundle" ]]; then
-                group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
-                parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
-                project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs || true)
+                parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs || true)
+                project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs || "$module_dir")
+                echo "group_id=${group_id}; parent_group_id=${parent_group_id}; project_name=${project_name}"
                 if [[ ${group_id} != "org.jahia.modules" && ${parent_group_id} != "org.jahia.modules" ]]; then
                   echo "Project is not a Jahia modules"
                 else
@@ -158,11 +161,11 @@ steps:
                     sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                     sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
                     if [ "<<parameters.dry_run>>" = "true" ]; then
-                      git add pom.xml && git commit -m "[ci skip] Updated signature for ${project_name}"
+                      echo "Skipping git commit/push"
+                    else
+                      git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
                       current_branch=$(git branch --show-current)
                       git push -u origin ${current_branch}
-                    else
-                      echo "Skipping git commit/push"
                     fi
                   fi
                 fi
